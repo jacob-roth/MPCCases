@@ -82,7 +82,7 @@ mutable struct CaseData
   phys::Array{Phys,1}
 end
 
-function loadcase(case_name, case_path, lineOff=Line())
+function load_case(case_name, case_path, lineOff=Line())
   if ~(case_path[end] ∈ Set(['/',"/"]))
         case_path = case_path * "/"
   end
