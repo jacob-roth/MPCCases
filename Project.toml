@@ -1,0 +1,7 @@
+name = "MPCCases"
+uuid = "18da711e-460b-11e9-09d1-c9dc5c0ea288"
+authors = ["Jake Roth <jmroth@uchicago.edu>"]
+version = "0.1.0"
+
+[deps]
+DelimitedFiles = "8bb1440f-4735-579b-a4ab-409b98df4dab"
