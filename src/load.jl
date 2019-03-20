@@ -82,7 +82,7 @@ mutable struct CaseData
   phys::Array{Phys,1}
 end
 
-function load_case(case_name, case_path, lineOff=Line())
+function load_case(case_name, case_path, lineOff=Line(); other::Bool=true)
   if ~(case_path[end] ∈ Set(['/',"/"]))
         case_path = case_path * "/"
   end
@@ -207,19 +207,25 @@ function load_case(case_name, case_path, lineOff=Line())
   #
   # load physical
   #
-  phys_arr = readdlm(case_name * ".phys")
-  phys = []
-  for i in 1:size(phys_arr,1)
-    p = Phys(phys_arr[i,:]...)
-    push!(phys, p)
+  if other == true
+    phys_arr = readdlm(case_name * ".phys")
+    phys = []
+    for i in 1:size(phys_arr,1)
+      p = Phys(phys_arr[i,:]...)
+      push!(phys, p)
+    end
   end
 
   #
   # return
   #
   opf = OPFData(buses, lines, generators, bus_ref, baseMVA, busIdx, FromLines, ToLines, BusGeners)
-  CD = CaseData(opf, phys)
-  return CD
+  if other == true
+    CD = CaseData(opf, phys)
+    return CD
+  else
+    return opf
+  end
 end
 
 function computeAdmitances(lines, buses, baseMVA)
