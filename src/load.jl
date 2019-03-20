@@ -59,9 +59,9 @@ mutable struct Gener
 end
 
 mutable struct OPFData
-  buses::Array{Bus,1}
-  lines::Array{Line,1}
-  generators::Array{Gener,1}
+  buses::StructArray{Bus,1}
+  lines::StructArray{Line,1}
+  generators::StructArray{Gener,1}
   bus_ref::Int
   baseMVA::Float64
   BusIdx::Dict{Int,Int}    #map from bus ID to bus index
@@ -79,7 +79,7 @@ end
 
 mutable struct CaseData
   opf::OPFData
-  phys::Array{Phys,1}
+  phys::StructArray{Phys,1}
 end
 
 function load_case(case_name, case_path, lineOff=Line(); other::Bool=true)
@@ -219,7 +219,7 @@ function load_case(case_name, case_path, lineOff=Line(); other::Bool=true)
   #
   # return
   #
-  opf = OPFData(buses, lines, generators, bus_ref, baseMVA, busIdx, FromLines, ToLines, BusGeners)
+  opf = OPFData(StructArray(buses), StructArray(lines), StructArray(generators), bus_ref, baseMVA, busIdx, FromLines, ToLines, BusGeners)
   if other == true
     CD = CaseData(opf, phys)
     return CD

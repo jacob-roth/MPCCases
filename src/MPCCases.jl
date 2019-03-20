@@ -1,5 +1,5 @@
 module MPCCases
-using DelimitedFiles
+using DelimitedFiles, StructArray
 ## based on: https://github.com/StructJuMP/StructJuMP.jl/tree/master/examples/PowerGrid
 
 include("load.jl")
