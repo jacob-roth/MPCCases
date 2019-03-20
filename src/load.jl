@@ -54,7 +54,7 @@ mutable struct Gener
   gentype::Int
   startup::Float64
   shutdown::Float64
-  n::Union{Int,Float64}
+  n::Int64
   coeff::Array
 end
 
