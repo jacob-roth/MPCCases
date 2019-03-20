@@ -68,6 +68,7 @@ mutable struct OPFData
   FromLines::Array         #From lines for each bus (Array of Array)
   ToLines::Array           #To lines for each bus (Array of Array)
   BusGenerators::Array     #list of generators for each bus (Array of Array)
+  BusLoads::Array          #list of loads for each bus (Array of Array)
 end
 
 mutable struct Phys
@@ -89,7 +90,7 @@ function load_case(case_name, case_path, lineOff=Line(); other::Bool=true)
   case_name = case_path * case_name
 
   #
-  # load buses
+  # populate buses
   #
   bus_arr = readdlm(case_name * ".bus")
   num_buses = size(bus_arr,1)
@@ -110,7 +111,7 @@ function load_case(case_name, case_path, lineOff=Line(); other::Bool=true)
   end
 
   #
-  # load branches/lines
+  # populate branches/lines
   #
   branch_arr = readdlm(case_name * ".branch")
   num_lines = size(branch_arr,1)
@@ -139,7 +140,7 @@ function load_case(case_name, case_path, lineOff=Line(); other::Bool=true)
   @assert lit == num_on
 
   #
-  # load generators
+  # populate generators
   #
   gen_arr = readdlm(case_name * ".gen")
   costgen_arr = readdlm(case_name * ".gencost")
@@ -203,6 +204,9 @@ function load_case(case_name, case_path, lineOff=Line(); other::Bool=true)
 
   # generators at each bus
   BusGeners = mapGenersToBuses(buses, generators, busIdx)
+
+  # loads at each bus
+  BusLoads = mapLoadsToBuses(buses, busIdx)
 
   #
   # load physical
@@ -329,4 +333,17 @@ function mapGenersToBuses(buses, generators,busDict)
     push!(gen2bus[busID], g)
   end
   return gen2bus
+end
+
+# Builds a map between buses and loads.
+# For each bus we keep an array of corresponding loads number (as array).
+function mapLoadsToBuses(buses, busDict)
+  load2bus = [Int[] for b in 1:length(buses)]
+  loads = buses[buses.bustype.==1]
+  for l in 1:length(loads)
+    busID = busDict[ loads[l].bus_i ]
+    #@assert(0==length(gen2bus[busID])) #at most one generator per bus
+    push!(load2bus[busID], l)
+  end
+  return load2bus
 end
