@@ -230,14 +230,14 @@ end
 
 function computeAdmitances(lines, buses, baseMVA)
   nlines = length(lines)
-  YffR=Array{Float64,1}(undef, nlines)
-  YffI=Array{Float64,1}(undef, nlines)
-  YttR=Array{Float64,1}(undef, nlines)
-  YttI=Array{Float64,1}(undef, nlines)
-  YftR=Array{Float64,1}(undef, nlines)
-  YftI=Array{Float64,1}(undef, nlines)
-  YtfR=Array{Float64,1}(undef, nlines)
-  YtfI=Array{Float64,1}(undef, nlines)
+  YffR=zeros(nlines)
+  YffI=zeros(nlines)
+  YttR=zeros(nlines)
+  YttI=zeros(nlines)
+  YftR=zeros(nlines)
+  YftI=zeros(nlines)
+  YtfR=zeros(nlines)
+  YtfI=zeros(nlines)
 
   for i in 1:nlines
     @assert lines[i].status == 1
@@ -262,24 +262,24 @@ function computeAdmitances(lines, buses, baseMVA)
   end
 
   nbuses = length(buses)
-  YshR = Array{Float64,1}(undef, nbuses)
-  YshI = Array{Float64,1}(undef, nbuses)
+  YshR = zeros(nbuses)
+  YshI = zeros(nbuses)
   for i in 1:nbuses
     YshR[i] = buses[i].Gs / baseMVA
     YshI[i] = buses[i].Bs / baseMVA
     #@printf("[%4d]   Ysh  %15.12f + %15.12f i \n", i, YshR[i], YshI[i])
   end
 
-  @assert 0==length(findall.(isnan.(YffR)))+length(findall.(isinf.(YffR)))
-  @assert 0==length(findall.(isnan.(YffI)))+length(findall.(isinf.(YffI)))
-  @assert 0==length(findall.(isnan.(YttR)))+length(findall.(isinf.(YttR)))
-  @assert 0==length(findall.(isnan.(YttI)))+length(findall.(isinf.(YttI)))
-  @assert 0==length(findall.(isnan.(YftR)))+length(findall.(isinf.(YftR)))
-  @assert 0==length(findall.(isnan.(YftI)))+length(findall.(isinf.(YftI)))
-  @assert 0==length(findall.(isnan.(YtfR)))+length(findall.(isinf.(YtfR)))
-  @assert 0==length(findall.(isnan.(YtfI)))+length(findall.(isinf.(YtfI)))
-  @assert 0==length(findall.(isnan.(YshR)))+length(findall.(isinf.(YshR)))
-  @assert 0==length(findall.(isnan.(YshI)))+length(findall.(isinf.(YshI)))
+  @assert 0==length(findall(isnan.(YffR)))+length(findall(isinf.(YffR)))
+  @assert 0==length(findall(isnan.(YffI)))+length(findall(isinf.(YffI)))
+  @assert 0==length(findall(isnan.(YttR)))+length(findall(isinf.(YttR)))
+  @assert 0==length(findall(isnan.(YttI)))+length(findall(isinf.(YttI)))
+  @assert 0==length(findall(isnan.(YftR)))+length(findall(isinf.(YftR)))
+  @assert 0==length(findall(isnan.(YftI)))+length(findall(isinf.(YftI)))
+  @assert 0==length(findall(isnan.(YtfR)))+length(findall(isinf.(YtfR)))
+  @assert 0==length(findall(isnan.(YtfI)))+length(findall(isinf.(YtfI)))
+  @assert 0==length(findall(isnan.(YshR)))+length(findall(isinf.(YshR)))
+  @assert 0==length(findall(isnan.(YshI)))+length(findall(isinf.(YshI)))
 
   return YffR, YffI, YttR, YttI, YftR, YftI, YtfR, YtfI, YshR, YshI
 end
