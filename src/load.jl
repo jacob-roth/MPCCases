@@ -223,7 +223,7 @@ function load_case(case_name, case_path, lineOff=Line(); other::Bool=true)
   #
   # return
   #
-  opf = OPFData(StructArray(buses), StructArray(lines), StructArray(generators), bus_ref, baseMVA, busIdx, FromLines, ToLines, BusGeners)
+  opf = OPFData(StructArray(buses), StructArray(lines), StructArray(generators), bus_ref, baseMVA, busIdx, FromLines, ToLines, BusGeners, BusLoads)
   if other == true
     CD = CaseData(opf, phys)
     return CD
@@ -338,6 +338,7 @@ end
 # Builds a map between buses and loads.
 # For each bus we keep an array of corresponding loads number (as array).
 function mapLoadsToBuses(buses, busDict)
+  buses = StructArray(buses)
   load2bus = [Int[] for b in 1:length(buses)]
   loads = buses[buses.bustype.==1]
   for l in 1:length(loads)
