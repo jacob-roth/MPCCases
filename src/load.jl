@@ -79,7 +79,7 @@ end
 
 mutable struct CaseData
   opf::OPFData
-  phys::StructArray{Phys,1}
+  phys::Array{Phys,1}
 end
 
 function load_case(case_name, case_path, lineOff=Line(); other::Bool=true)
@@ -221,7 +221,7 @@ function load_case(case_name, case_path, lineOff=Line(); other::Bool=true)
   #
   opf = OPFData(StructArray(buses), StructArray(lines), StructArray(generators), bus_ref, baseMVA, busIdx, FromLines, ToLines, BusGeners)
   if other == true
-    CD = CaseData(opf, StructArray(phys))
+    CD = CaseData(opf, phys)
     return CD
   else
     return opf
