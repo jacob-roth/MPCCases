@@ -7,5 +7,6 @@ export load_case
 export mapLinesToBuses
 export mapBusIdToIdx
 export mapGenersToBuses
+export computeAdmitances
 
 end # module
