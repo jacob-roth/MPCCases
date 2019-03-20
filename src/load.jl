@@ -221,7 +221,7 @@ function load_case(case_name, case_path, lineOff=Line(); other::Bool=true)
   #
   opf = OPFData(StructArray(buses), StructArray(lines), StructArray(generators), bus_ref, baseMVA, busIdx, FromLines, ToLines, BusGeners)
   if other == true
-    CD = CaseData(opf, phys)
+    CD = CaseData(opf, StructArray(phys))
     return CD
   else
     return opf

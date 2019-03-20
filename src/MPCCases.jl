@@ -8,5 +8,7 @@ export mapLinesToBuses
 export mapBusIdToIdx
 export mapGenersToBuses
 export computeAdmitances
+export OPFData
+export CaseData
 
 end # module
