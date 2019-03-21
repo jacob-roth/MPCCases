@@ -315,7 +315,9 @@ function mapBusIdToIdx(buses)
   end
   return dict
 end
-
+function mapIdxToBusId(opfdata::OPFData)
+  return Dict(b=>a for (a,b) in opfdata.BusIdx)
+end
 
 # Builds a map between buses and generators.
 # For each bus we keep an array of corresponding generators number (as array).

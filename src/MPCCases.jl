@@ -5,7 +5,7 @@ using DelimitedFiles, StructArrays
 include("load.jl")
 export load_case
 export mapLinesToBuses
-export mapBusIdToIdx
+export mapBusIdToIdx, mapIdxToBusId
 export mapGenersToBuses
 export computeAdmitances
 export OPFData
