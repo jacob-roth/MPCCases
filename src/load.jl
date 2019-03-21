@@ -330,3 +330,14 @@ function mapGenersToBuses(buses, generators,busDict)
   end
   return gen2bus
 end
+# convert the above into a dict
+function mapGenersToBuses(opfdata::OPFData)
+  GEN_idx_to_id = Dict((v,k) for (k,v) in enumerate(mapGenersToBuses(opfdata.buses, opfdata.generators, mapIdxToBusId(opfdata))))
+  D = Dict()
+  for k in keys(GEN_idx_to_id)
+    for kk in k
+      push!(D, kk => get(GEN_idx_to_id, k, :NA))
+    end
+  end
+  return D
+end
