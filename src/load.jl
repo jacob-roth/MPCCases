@@ -1,4 +1,4 @@
-mutable struct Bus
+struct Bus
   bus_i::Int
   bustype::Int
   Pd::Float64
@@ -14,7 +14,7 @@ mutable struct Bus
   Vmin::Float64
 end
 
-mutable struct Line
+struct Line
   from::Int
   to::Int
   r::Float64
@@ -96,9 +96,10 @@ function load_case(case_name, case_path, lineOff=Line(); other::Bool=true)
   buses = Array{Bus,1}(undef, num_buses)
   bus_ref=-1
   for i in 1:num_buses
-    @assert bus_arr[i,1]>0  #don't support nonpositive bus ids
+    @assert bus_arr[i,1]>0  # don't support nonpositive bus ids
+    bus_arr[i,9] *= pi/180  # ANIRUDH: Bus is an immutable struct. Modify bus_arr itself
     buses[i] = Bus(bus_arr[i,1:13]...)
-    buses[i].Va *= pi/180
+    # buses[i].Va *= pi/180 # ANIRUDH: See previous comment
     if buses[i].bustype==3
       if bus_ref>0
         error("More than one reference bus present in the data")
@@ -228,25 +229,28 @@ function load_case(case_name, case_path, lineOff=Line(); other::Bool=true)
   end
 end
 
-function computeAdmitances(lines, buses, baseMVA)
+function computeAdmitances(lines, buses, baseMVA, lossless::Bool=false)
   nlines = length(lines)
-  YffR=zeros(nlines)
-  YffI=zeros(nlines)
-  YttR=zeros(nlines)
-  YttI=zeros(nlines)
-  YftR=zeros(nlines)
-  YftI=zeros(nlines)
-  YtfR=zeros(nlines)
-  YtfI=zeros(nlines)
+  YffR=Array{Float64}(undef, nlines)
+  YffI=Array{Float64}(undef, nlines)
+  YttR=Array{Float64}(undef, nlines)
+  YttI=Array{Float64}(undef, nlines)
+  YftR=Array{Float64}(undef, nlines)
+  YftI=Array{Float64}(undef, nlines)
+  YtfR=Array{Float64}(undef, nlines)
+  YtfI=Array{Float64}(undef, nlines)
 
   for i in 1:nlines
     @assert lines[i].status == 1
     Ys = 1/(lines[i].r + lines[i].x*im)
+    Ys = 1/((lossless ? 0.0 : lines[i].r) + lines[i].x*im)
     #assign nonzero tap ratio
     tap = (lines[i].ratio == 0) ? (1.0) : (lines[i].ratio)
 
     #add phase shifters
-    tap *= exp(lines[i].angle * pi/180 * im)
+    if (!lossless)
+      tap *= exp(lines[i].angle * pi/180 * im)
+    end
 
     Ytt = Ys + lines[i].b/2*im
     Yff = Ytt / (tap*conj(tap))
@@ -258,6 +262,15 @@ function computeAdmitances(lines, buses, baseMVA)
     YttR[i] = real(Ytt); YttI[i] = imag(Ytt)
     YtfR[i] = real(Ytf); YtfI[i] = imag(Ytf)
     YftR[i] = real(Yft); YftI[i] = imag(Yft)
+
+    if lossless
+      if !iszero(lines[i].r)
+        println("warning: lossless assumption changes r from ", lines[i].r, " to 0 for line ", lines[i].from, " -> ", lines[i].to)
+      end
+      if !iszero(lines[i].angle)
+        println("warning: lossless assumption changes angle from ", lines[i].angle, " to 0 for line ", lines[i].from, " -> ", lines[i].to)
+      end
+    end
     #@printf("[%4d]  tap=%12.9f   %12.9f\n", i, real(tap), imag(tap));
   end
 
@@ -265,9 +278,11 @@ function computeAdmitances(lines, buses, baseMVA)
   YshR = zeros(nbuses)
   YshI = zeros(nbuses)
   for i in 1:nbuses
-    YshR[i] = buses[i].Gs / baseMVA
+    YshR[i] = (lossless ? 0.0 : (buses[i].Gs / baseMVA))
     YshI[i] = buses[i].Bs / baseMVA
-    #@printf("[%4d]   Ysh  %15.12f + %15.12f i \n", i, YshR[i], YshI[i])
+    if lossless && !iszero(buses[i].Gs)
+      println("warning: lossless assumption changes Gshunt from ", buses[i].Gs, " to 0 for bus ", i)
+    end
   end
 
   @assert 0==length(findall(isnan.(YffR)))+length(findall(isinf.(YffR)))
@@ -280,6 +295,13 @@ function computeAdmitances(lines, buses, baseMVA)
   @assert 0==length(findall(isnan.(YtfI)))+length(findall(isinf.(YtfI)))
   @assert 0==length(findall(isnan.(YshR)))+length(findall(isinf.(YshR)))
   @assert 0==length(findall(isnan.(YshI)))+length(findall(isinf.(YshI)))
+  if lossless
+    @assert 0==length(findall(!iszero, YffR))
+    @assert 0==length(findall(!iszero, YttR))
+    @assert 0==length(findall(!iszero, YftR))
+    @assert 0==length(findall(!iszero, YtfR))
+    @assert 0==length(findall(!iszero, YshR))
+  end
 
   return YffR, YffI, YttR, YttI, YftR, YftI, YtfR, YtfI, YshR, YshI
 end
