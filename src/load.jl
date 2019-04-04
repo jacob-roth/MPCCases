@@ -229,7 +229,7 @@ function load_case(case_name, case_path, lineOff=Line(); other::Bool=true)
   end
 end
 
-function computeAdmitances(lines, buses, baseMVA, lossless::Bool=false)
+function computeAdmitances(lines, buses, baseMVA; lossless::Bool=false)
   nlines = length(lines)
   YffR=Array{Float64}(undef, nlines)
   YffI=Array{Float64}(undef, nlines)
