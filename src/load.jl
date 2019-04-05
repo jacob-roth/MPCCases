@@ -1,5 +1,5 @@
 struct Bus
-  bus_i::Int
+  bus_i::Int  ## bus ID
   bustype::Int
   Pd::Float64
   Qd::Float64
@@ -33,7 +33,7 @@ Line() = Line(0,0,0.,0.,0.,0.,0.,0.,0.,0.,0,0.,0.)
 
 mutable struct Gener
   # .gen fields
-  bus::Int
+  bus::Int  ## associated bus ID
   Pg::Float64
   Qg::Float64
   Qmax::Float64
@@ -55,7 +55,7 @@ mutable struct Gener
   startup::Float64
   shutdown::Float64
   n::Int64
-  coeff::Array
+  coeff::Array{Float64,1}
 end
 
 mutable struct OPFData
@@ -82,7 +82,13 @@ mutable struct CaseData
   phys::Array{Phys,1}
 end
 
-function load_case(case_name, case_path, lineOff=Line(); other::Bool=true)
+function load_case(case_name, case_path, options::Dict=Dict(
+                                                  :lossless => false,
+                                                  :current_rating => false,
+                                                  :separate_buses => false,
+                                                  :aggregate_gens => false, ## TODO
+                                                  :load_phys => false),
+                                                  lineOff=Line())
   if ~(case_path[end] ∈ Set(['/',"/"]))
         case_path = case_path * "/"
   end
@@ -159,7 +165,7 @@ function load_case(case_name, case_path, lineOff=Line(); other::Bool=true)
   i=0
   for git in gens_on
     i += 1
-    generators[i] = Gener(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, Int64[0]) #gen_arr[i,1:end]...)
+    generators[i] = Gener(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, Float64[0.0]) #gen_arr[i,1:end]...)
 
     generators[i].bus      = gen_arr[git,1]
     generators[i].Pg       = gen_arr[git,2] / baseMVA
@@ -206,9 +212,42 @@ function load_case(case_name, case_path, lineOff=Line(); other::Bool=true)
   BusGeners = mapGenersToBuses(buses, generators, busIdx)
 
   #
+  # separate generator buses from load buses (net out loads)
+  #
+  if options[:separate_buses] == true
+    for i in 1:num_buses
+      B = buses[i]
+      B_data = [getfield(B, fn) for fn in fieldnames(Bus)]; @assert(Bus(B_data...) == B) ## ensure ordering...
+      if buses[i].bustype == 2
+        ## get buses generators
+        Gs = filter(x -> x.bus == B.bus_i, generators)
+        ## net each generator against simple average demand
+        for g in Gs
+          g.Pg -= (B.Pd / baseMVA) / length(Gs)
+          g.Qg -= (B.Qd / baseMVA) / length(Gs)
+        end
+        ## remove demand from formerly gen+demand bus
+        Pd_idx = findall(:Pd .== [fn for fn in fieldnames(Bus)])
+        Qd_idx = findall(:Qd .== [fn for fn in fieldnames(Bus)])
+        B_data[Pd_idx[1]] = 0.0
+        B_data[Qd_idx[1]] = 0.0
+        ## replace bus
+        buses[i] = Bus(B_data...)
+      end
+    end
+  end
+
+  #
+  # aggregate generators
+  #
+  if options[:aggregate_gens] == true
+    throw(ArgumentError("generator aggregation not yet implemented"))
+  end
+
+  #
   # load physical
   #
-  if other == true
+  if options[:load_phys] == true
     phys_arr = readdlm(case_name * ".phys")
     phys = []
     for i in 1:size(phys_arr,1)
@@ -221,7 +260,7 @@ function load_case(case_name, case_path, lineOff=Line(); other::Bool=true)
   # return
   #
   opf = OPFData(StructArray(buses), StructArray(lines), StructArray(generators), bus_ref, baseMVA, busIdx, FromLines, ToLines, BusGeners)
-  if other == true
+  if options[:load_phys] == true
     CD = CaseData(opf, phys)
     return CD
   else
