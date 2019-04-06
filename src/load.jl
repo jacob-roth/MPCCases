@@ -278,7 +278,7 @@ function computeAdmitances(lines, buses, baseMVA; lossless::Bool=false, remove_B
   YshI = zeros(nbuses)
   for i in 1:nbuses
     YshR[i] = (lossless ? 0.0 : (buses[i].Gs / baseMVA))
-    YshI[i] = (remove_Bshunt ? 0.0: (buses[i].Bs / baseMVA))
+    YshI[i] = (remove_Bshunt ? 0.0 : (buses[i].Bs / baseMVA))
     if lossless && !iszero(buses[i].Gs)
       println("warning: lossless assumption changes Gshunt from ", buses[i].Gs, " to 0 for bus ", i)
     end
