@@ -229,7 +229,7 @@ function load_case(case_name, case_path, lineOff=Line(); other::Bool=true)
   end
 end
 
-function computeAdmitances(lines, buses, baseMVA; lossless::Bool=false)
+function computeAdmitances(lines, buses, baseMVA; lossless::Bool=false, remove_Bshunt::Bool=false)
   nlines = length(lines)
   YffR=Array{Float64}(undef, nlines)
   YffI=Array{Float64}(undef, nlines)
@@ -242,7 +242,6 @@ function computeAdmitances(lines, buses, baseMVA; lossless::Bool=false)
 
   for i in 1:nlines
     @assert lines[i].status == 1
-    Ys = 1/(lines[i].r + lines[i].x*im)
     Ys = 1/((lossless ? 0.0 : lines[i].r) + lines[i].x*im)
     #assign nonzero tap ratio
     tap = (lines[i].ratio == 0) ? (1.0) : (lines[i].ratio)
@@ -279,9 +278,12 @@ function computeAdmitances(lines, buses, baseMVA; lossless::Bool=false)
   YshI = zeros(nbuses)
   for i in 1:nbuses
     YshR[i] = (lossless ? 0.0 : (buses[i].Gs / baseMVA))
-    YshI[i] = buses[i].Bs / baseMVA
+    YshI[i] = (remove_Bshunt ? 0.0: (buses[i].Bs / baseMVA))
     if lossless && !iszero(buses[i].Gs)
       println("warning: lossless assumption changes Gshunt from ", buses[i].Gs, " to 0 for bus ", i)
+    end
+    if remove_Bshunt && !iszero(buses[i].Bs)
+      println("warning: remove-Bshunt assumption changes Bshunt from ", buses[i].Bs, " to 0 for bus ", i)
     end
   end
 
