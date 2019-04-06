@@ -7,7 +7,7 @@ export load_case
 export mapLinesToBuses
 export mapBusIdToIdx, mapIdxToBusId
 export mapGenersToBuses
-export computeAdmitances
+export computeAdmitances, computeAdmittances, computeAdmittanceMatrix
 export OPFData
 export CaseData
 

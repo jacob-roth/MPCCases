@@ -230,6 +230,7 @@ function load_case(case_name, case_path, lineOff=Line(); other::Bool=true)
 end
 
 function computeAdmitances(lines, buses, baseMVA; lossless::Bool=false, remove_Bshunt::Bool=false)
+  """ note: Bshunt refers to both branch and bus shunts... """
   nlines = length(lines)
   YffR=Array{Float64}(undef, nlines)
   YffI=Array{Float64}(undef, nlines)
@@ -251,7 +252,7 @@ function computeAdmitances(lines, buses, baseMVA; lossless::Bool=false, remove_B
       tap *= exp(lines[i].angle * pi/180 * im)
     end
 
-    Ytt = Ys + lines[i].b/2*im
+    Ytt = Ys + (remove_Bshunt ? 0.0 : lines[i].b/2*im)  ## JR: remove branch shunt susceptance
     Yff = Ytt / (tap*conj(tap))
     Yft = -Ys / conj(tap)
     Ytf = -Ys / tap
@@ -278,7 +279,7 @@ function computeAdmitances(lines, buses, baseMVA; lossless::Bool=false, remove_B
   YshI = zeros(nbuses)
   for i in 1:nbuses
     YshR[i] = (lossless ? 0.0 : (buses[i].Gs / baseMVA))
-    YshI[i] = (remove_Bshunt ? 0.0 : (buses[i].Bs / baseMVA))
+    YshI[i] = (remove_Bshunt ? 0.0 : (buses[i].Bs / baseMVA)) ## JR: remove bus shunt
     if lossless && !iszero(buses[i].Gs)
       println("warning: lossless assumption changes Gshunt from ", buses[i].Gs, " to 0 for bus ", i)
     end
@@ -307,7 +308,33 @@ function computeAdmitances(lines, buses, baseMVA; lossless::Bool=false, remove_B
 
   return YffR, YffI, YttR, YttI, YftR, YftI, YtfR, YtfI, YshR, YshI
 end
+computeAdmittances = computeAdmitances
 
+function computeAdmittanceMatrix(lines, buses, baseMVA, busDict; lossless::Bool=true, remove_Bshunt::Bool=true)
+  if !lossless
+    error("Admittance matrix for lossy networks still to be implemented.")
+  end
+
+  YffR, YffI, YttR, YttI, YftR, YftI, YtfR, YtfI, YshR, YshI = computeAdmitances(lines, buses, baseMVA; lossless=lossless, remove_Bshunt=remove_Bshunt)
+
+  nbuses = length(buses)
+  nlines = length(lines)
+  Y = zeros(Float64, nbuses, nbuses)
+  for l in 1:nlines
+    i = busDict[lines[l].from]
+    j = busDict[lines[l].to]
+    Y[i,j] += YftI[l]
+    Y[j,i] += YtfI[l]
+    Y[i,i] += YffI[l]
+    Y[j,j] += YttI[l]
+  end
+  if remove_Bshunt == false
+    for i in 1:nbuses
+      Y[i,i] += YshI[i]
+    end
+  end
+  return Y
+end
 
 # Builds a map from lines to buses.
 # For each line we store an array with zero or one element containing
