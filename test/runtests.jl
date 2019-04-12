@@ -25,12 +25,12 @@ for case in cases
     nbus = length(buses); nline = length(lines); ngen  = length(generators)
 
     # branch admitances
-    Y = MPCCases.computeAdmittanceMatrix(lines, buses, baseMVA, busIdx; lossless=false, remove_Bshunt=false)
+    Y = MPCCases.computeAdmittanceMatrix(lines, buses, baseMVA, busIdx; lossless=false, remove_Bshunt=false, sparse=true)
     if case == "case9"
         YY = matread("Y9.mat")
     elseif case == "case30"
         YY = matread("Y30.mat")
     end
-    @test norm(YY["Y"] - Y) <= tol
+    @test norm(YY["Y"] - Matrix(Y)) <= tol
 end
 end # testset

@@ -310,7 +310,7 @@ function computeAdmitances(lines, buses, baseMVA; lossless::Bool=false, remove_B
 end
 computeAdmittances = computeAdmitances
 
-function computeAdmittanceMatrix(lines, buses, baseMVA, busDict; lossless::Bool=true, remove_Bshunt::Bool=true)
+function MPCCases.computeAdmittanceMatrix(lines, buses, baseMVA, busDict; lossless::Bool=true, remove_Bshunt::Bool=true, sparse::Bool=true)
   YffR, YffI, YttR, YttI, YftR, YftI, YtfR, YtfI, YshR, YshI = computeAdmitances(lines, buses, baseMVA; lossless=lossless, remove_Bshunt=remove_Bshunt)
   nbuses = length(buses)
   nlines = length(lines)
@@ -332,8 +332,13 @@ function computeAdmittanceMatrix(lines, buses, baseMVA, busDict; lossless::Bool=
     end
     return Y
   else
-    B = zeros(Float64, nbuses, nbuses)
-    G = zeros(Float64, nbuses, nbuses)
+    if sparse
+      B = spzeros(Float64, nbuses, nbuses)
+      G = spzeros(Float64, nbuses, nbuses)
+    else
+      B = zeros(Float64, nbuses, nbuses)
+      G = zeros(Float64, nbuses, nbuses)
+    end
     for l in 1:nlines
       i = busDict[lines[l].from]
       j = busDict[lines[l].to]
