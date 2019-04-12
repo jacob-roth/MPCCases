@@ -311,29 +311,52 @@ end
 computeAdmittances = computeAdmitances
 
 function computeAdmittanceMatrix(lines, buses, baseMVA, busDict; lossless::Bool=true, remove_Bshunt::Bool=true)
-  if !lossless
-    error("Admittance matrix for lossy networks still to be implemented.")
-  end
-
   YffR, YffI, YttR, YttI, YftR, YftI, YtfR, YtfI, YshR, YshI = computeAdmitances(lines, buses, baseMVA; lossless=lossless, remove_Bshunt=remove_Bshunt)
-
   nbuses = length(buses)
   nlines = length(lines)
-  Y = zeros(Float64, nbuses, nbuses)
-  for l in 1:nlines
-    i = busDict[lines[l].from]
-    j = busDict[lines[l].to]
-    Y[i,j] += YftI[l]
-    Y[j,i] += YtfI[l]
-    Y[i,i] += YffI[l]
-    Y[j,j] += YttI[l]
-  end
-  if remove_Bshunt == false
-    for i in 1:nbuses
-      Y[i,i] += YshI[i]
+
+  if lossless
+    Y = zeros(Float64, nbuses, nbuses)
+    for l in 1:nlines
+      i = busDict[lines[l].from]
+      j = busDict[lines[l].to]
+      Y[i,j] += YftI[l]
+      Y[j,i] += YtfI[l]
+      Y[i,i] += YffI[l]
+      Y[j,j] += YttI[l]
     end
+    if remove_Bshunt == false
+      for i in 1:nbuses
+        Y[i,i] += YshI[i]
+      end
+    end
+    return Y
+  else
+    B = zeros(Float64, nbuses, nbuses)
+    G = zeros(Float64, nbuses, nbuses)
+    for l in 1:nlines
+      i = busDict[lines[l].from]
+      j = busDict[lines[l].to]
+      B[i,j] += YftI[l]
+      B[j,i] += YtfI[l]
+      B[i,i] += YffI[l]
+      B[j,j] += YttI[l]
+
+      G[i,j] += YftR[l]
+      G[j,i] += YtfR[l]
+      G[i,i] += YffR[l]
+      G[j,j] += YttR[l]
+    end
+    if remove_Bshunt == false
+      for i in 1:nbuses
+        B[i,i] += YshI[i]
+      end
+    end
+    for i in 1:nbuses
+      G[i,i] += YshR[i]
+    end
+    return G + im*B
   end
-  return Y
 end
 
 # Builds a map from lines to buses.
