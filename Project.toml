@@ -5,4 +5,5 @@ version = "0.1.0"
 
 [deps]
 DelimitedFiles = "8bb1440f-4735-579b-a4ab-409b98df4dab"
+MAT = "23992714-dd62-5051-b70f-ba57cb901cac"
 StructArrays = "09ab397b-f2b6-538f-b94a-2f83cf4a842a"
