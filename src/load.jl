@@ -309,6 +309,10 @@ function computeAdmitances(lines, buses, baseMVA; lossless::Bool=false, remove_B
   return YffR, YffI, YttR, YttI, YftR, YftI, YtfR, YtfI, YshR, YshI
 end
 computeAdmittances = computeAdmitances
+function computeAdmittances(opfdata::OPFData; lossless::Bool=false, remove_Bshunt::Bool=false)
+  return computeAdmittances(opfdata.lines, opfdata.buses, opfdata.baseMVA; lossless=lossless, remove_Bshunt=remove_Bshunt)
+end
+computeAdmittances = computeAdmitances
 
 function computeAdmittanceMatrix(lines, buses, baseMVA, busDict; lossless::Bool=true, remove_Bshunt::Bool=true, sparse::Bool=true)
   YffR, YffI, YttR, YttI, YftR, YftI, YtfR, YtfI, YshR, YshI = computeAdmitances(lines, buses, baseMVA; lossless=lossless, remove_Bshunt=remove_Bshunt)
@@ -362,6 +366,20 @@ function computeAdmittanceMatrix(lines, buses, baseMVA, busDict; lossless::Bool=
     end
     return G + im*B
   end
+end
+function computeAdmittanceMatrix(opfdata::OPFData, options::Dict=Dict())
+  # parse options
+  lossless = haskey(options, :lossless) ? options[:lossless] : false
+  current_rating = haskey(options, :current_rating) ? options[:current_rating] : false
+  remove_Bshunt = haskey(options, :remove_Bshunt) ? options[:remove_Bshunt] : false
+  if lossless && !current_rating
+      println("warning: lossless assumption requires `current_rating` instead of `power_rating`\n")
+      current_rating = true
+  end
+  lines = opfdata.lines; buses = opfdata.buses; generators = opfdata.generators; baseMVA = opfdata.baseMVA
+  busIdx = opfdata.BusIdx; FromLines = opfdata.FromLines; ToLines = opfdata.ToLines; BusGeners = opfdata.BusGenerators;
+  nbus = length(buses); nline = length(lines); ngen  = length(generators)
+  return computeAdmittanceMatrix(lines, buses, baseMVA, busIdx; lossless=lossless, remove_Bshunt=remove_Bshunt)
 end
 
 # Builds a map from lines to buses.
