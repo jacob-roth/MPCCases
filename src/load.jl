@@ -308,11 +308,10 @@ function computeAdmitances(lines, buses, baseMVA; lossless::Bool=false, remove_B
 
   return YffR, YffI, YttR, YttI, YftR, YftI, YtfR, YtfI, YshR, YshI
 end
-computeAdmittances(lines, buses, baseMVA; lossless::Bool=false, remove_Bshunt::Bool=false) = computeAdmitances(lines, buses, baseMVA; lossless::Bool=false, remove_Bshunt::Bool=false)
-function computeAdmittances(opfdata::OPFData; lossless::Bool=false, remove_Bshunt::Bool=false)
-  return computeAdmittances(opfdata.lines, opfdata.buses, opfdata.baseMVA; lossless=lossless, remove_Bshunt=remove_Bshunt)
+function computeAdmitances(opfdata::OPFData; lossless::Bool=false, remove_Bshunt::Bool=false)
+  return computeAdmitances(opfdata.lines, opfdata.buses, opfdata.baseMVA; lossless=lossless, remove_Bshunt=remove_Bshunt)
 end
-computeAdmitances(opfdata::OPFData; lossless::Bool=false, remove_Bshunt::Bool=false) = computeAdmittances(opfdata::OPFData; lossless::Bool=false, remove_Bshunt::Bool=false)
+computeAdmittances = computeAdmitances
 
 function computeAdmittanceMatrix(lines, buses, baseMVA, busDict; lossless::Bool=true, remove_Bshunt::Bool=true, sparse::Bool=true)
   YffR, YffI, YttR, YttI, YftR, YftI, YtfR, YtfI, YshR, YshI = computeAdmitances(lines, buses, baseMVA; lossless=lossless, remove_Bshunt=remove_Bshunt)
