@@ -229,7 +229,7 @@ function load_case(case_name, case_path, lineOff=Line(); other::Bool=true)
   end
 end
 
-function computeAdmitances(lines, buses, baseMVA; lossless::Bool=false, remove_Bshunt::Bool=false)
+function computeAdmitances(lines, buses, baseMVA; lossless::Bool=false, remove_Bshunt::Bool=false, verb::Bool=false)
   """ note: Bshunt refers to both branch and bus shunts... """
   nlines = length(lines)
   YffR=Array{Float64}(undef, nlines)
@@ -264,10 +264,10 @@ function computeAdmitances(lines, buses, baseMVA; lossless::Bool=false, remove_B
     YftR[i] = real(Yft); YftI[i] = imag(Yft)
 
     if lossless
-      if !iszero(lines[i].r)
+      if !iszero(lines[i].r) && verb
         println("warning: lossless assumption changes r from ", lines[i].r, " to 0 for line ", lines[i].from, " -> ", lines[i].to)
       end
-      if !iszero(lines[i].angle)
+      if !iszero(lines[i].angle) && verb
         println("warning: lossless assumption changes angle from ", lines[i].angle, " to 0 for line ", lines[i].from, " -> ", lines[i].to)
       end
     end
@@ -280,10 +280,10 @@ function computeAdmitances(lines, buses, baseMVA; lossless::Bool=false, remove_B
   for i in 1:nbuses
     YshR[i] = (lossless ? 0.0 : (buses[i].Gs / baseMVA))
     YshI[i] = (remove_Bshunt ? 0.0 : (buses[i].Bs / baseMVA)) ## JR: remove bus shunt
-    if lossless && !iszero(buses[i].Gs)
+    if lossless && !iszero(buses[i].Gs) && verb
       println("warning: lossless assumption changes Gshunt from ", buses[i].Gs, " to 0 for bus ", i)
     end
-    if remove_Bshunt && !iszero(buses[i].Bs)
+    if remove_Bshunt && !iszero(buses[i].Bs) && verb
       println("warning: remove-Bshunt assumption changes Bshunt from ", buses[i].Bs, " to 0 for bus ", i)
     end
   end
@@ -371,6 +371,7 @@ function computeAdmittanceMatrix(opfdata::OPFData, options::Dict=Dict())
   lossless = haskey(options, :lossless) ? options[:lossless] : false
   current_rating = haskey(options, :current_rating) ? options[:current_rating] : false
   remove_Bshunt = haskey(options, :remove_Bshunt) ? options[:remove_Bshunt] : false
+  verb = haskey(options, :verb) ? options[:verb] : false
   if lossless && !current_rating
       println("warning: lossless assumption requires `current_rating` instead of `power_rating`\n")
       current_rating = true
@@ -378,7 +379,7 @@ function computeAdmittanceMatrix(opfdata::OPFData, options::Dict=Dict())
   lines = opfdata.lines; buses = opfdata.buses; generators = opfdata.generators; baseMVA = opfdata.baseMVA
   busIdx = opfdata.BusIdx; FromLines = opfdata.FromLines; ToLines = opfdata.ToLines; BusGeners = opfdata.BusGenerators;
   nbus = length(buses); nline = length(lines); ngen  = length(generators)
-  return computeAdmittanceMatrix(lines, buses, baseMVA, busIdx; lossless=lossless, remove_Bshunt=remove_Bshunt)
+  return computeAdmittanceMatrix(lines, buses, baseMVA, busIdx; lossless=lossless, remove_Bshunt=remove_Bshunt, verb=verb)
 end
 
 # Builds a map from lines to buses.
