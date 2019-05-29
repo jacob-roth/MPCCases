@@ -229,8 +229,13 @@ function load_case(case_name, case_path, lineOff=Line(); other::Bool=true)
   end
 end
 
-function computeAdmitances(lines, buses, baseMVA; lossless::Bool=false, remove_Bshunt::Bool=false, verb::Bool=false)
-  """ note: Bshunt refers to both branch and bus shunts... """
+function computeAdmitances(lines, buses, baseMVA;
+                           lossless::Bool=false, remove_Bshunt::Bool=false, remove_tap::Bool=false,
+                           verb::Bool=false)
+  """ note:
+      (1) `remove_Bshunt` refers to both branch and bus shunts
+      (2) `remove_tap` removes line ratio and line angle tap adjustments
+  """
   nlines = length(lines)
   YffR=Array{Float64}(undef, nlines)
   YffI=Array{Float64}(undef, nlines)
@@ -245,10 +250,14 @@ function computeAdmitances(lines, buses, baseMVA; lossless::Bool=false, remove_B
     @assert lines[i].status == 1
     Ys = 1/((lossless ? 0.0 : lines[i].r) + lines[i].x*im)
     #assign nonzero tap ratio
-    tap = (lines[i].ratio == 0) ? (1.0) : (lines[i].ratio)
+    if !remove_tap
+      tap = (lines[i].ratio == 0) ? (1.0) : (lines[i].ratio)
+    else
+      tap = 1.0
+    end
 
     #add phase shifters
-    if (!lossless)
+    if (!lossless && !remove_tap)
       tap *= exp(lines[i].angle * pi/180 * im)
     end
 
@@ -263,6 +272,11 @@ function computeAdmitances(lines, buses, baseMVA; lossless::Bool=false, remove_B
     YtfR[i] = real(Ytf); YtfI[i] = imag(Ytf)
     YftR[i] = real(Yft); YftI[i] = imag(Yft)
 
+    if remove_tap
+      if !iszero(lines[i].ratio) && verb
+        println("warning: lossless assumption changes ratio from ", lines[i].ratio, " to 1 for line ", lines[i].from, " -> ", lines[i].to)
+      end
+    end
     if lossless
       if !iszero(lines[i].r) && verb
         println("warning: lossless assumption changes r from ", lines[i].r, " to 0 for line ", lines[i].from, " -> ", lines[i].to)
@@ -305,16 +319,21 @@ function computeAdmitances(lines, buses, baseMVA; lossless::Bool=false, remove_B
     @assert 0==length(findall(!iszero, YtfR))
     @assert 0==length(findall(!iszero, YshR))
   end
-
   return YffR, YffI, YttR, YttI, YftR, YftI, YtfR, YtfI, YshR, YshI
 end
-function computeAdmitances(opfdata::OPFData; lossless::Bool=false, remove_Bshunt::Bool=false, verb::Bool=false)
-  return computeAdmitances(opfdata.lines, opfdata.buses, opfdata.baseMVA; lossless=lossless, remove_Bshunt=remove_Bshunt)
+function computeAdmitances(opfdata::OPFData;
+         lossless::Bool=false, remove_Bshunt::Bool=false, remove_tap::Bool=false, verb::Bool=false)
+  return computeAdmitances(opfdata.lines, opfdata.buses, opfdata.baseMVA;
+         lossless=lossless, remove_Bshunt=remove_Bshunt, remove_tap=remove_tap, verb=verb)
 end
 computeAdmittances = computeAdmitances
 
-function computeAdmittanceMatrix(lines, buses, baseMVA, busDict; lossless::Bool=true, remove_Bshunt::Bool=true, sparse::Bool=true, verb::Bool=false)
-  YffR, YffI, YttR, YttI, YftR, YftI, YtfR, YtfI, YshR, YshI = computeAdmitances(lines, buses, baseMVA; lossless=lossless, remove_Bshunt=remove_Bshunt, verb=verb)
+function computeAdmittanceMatrix(lines, buses, baseMVA, busDict;
+                                 lossless::Bool=true, remove_Bshunt::Bool=true, remove_tap::Bool=true,
+                                 sparse::Bool=true, verb::Bool=false)
+  YffR, YffI, YttR, YttI, YftR, YftI, YtfR, YtfI, YshR, YshI = computeAdmitances(lines, buses, baseMVA;
+                                                               lossless=lossless, remove_Bshunt=remove_Bshunt, remove_tap=remove_tap,
+                                                               verb=verb)
   nbuses = length(buses)
   nlines = length(lines)
 
@@ -371,6 +390,7 @@ function computeAdmittanceMatrix(opfdata::OPFData, options::Dict=Dict())
   lossless = haskey(options, :lossless) ? options[:lossless] : false
   current_rating = haskey(options, :current_rating) ? options[:current_rating] : false
   remove_Bshunt = haskey(options, :remove_Bshunt) ? options[:remove_Bshunt] : false
+  remove_tap = haskey(options, :remove_tap) ? options[:remove_tap] : false
   verb = haskey(options, :verb) ? options[:verb] : false
   if lossless && !current_rating
       println("warning: lossless assumption requires `current_rating` instead of `power_rating`\n")
@@ -379,7 +399,8 @@ function computeAdmittanceMatrix(opfdata::OPFData, options::Dict=Dict())
   lines = opfdata.lines; buses = opfdata.buses; generators = opfdata.generators; baseMVA = opfdata.baseMVA
   busIdx = opfdata.BusIdx; FromLines = opfdata.FromLines; ToLines = opfdata.ToLines; BusGeners = opfdata.BusGenerators;
   nbus = length(buses); nline = length(lines); ngen  = length(generators)
-  return computeAdmittanceMatrix(lines, buses, baseMVA, busIdx; lossless=lossless, remove_Bshunt=remove_Bshunt, verb=verb)
+  return computeAdmittanceMatrix(lines, buses, baseMVA, busIdx;
+         lossless=lossless, remove_Bshunt=remove_Bshunt, remove_tap=remove_tap, verb=verb)
 end
 
 # Builds a map from lines to buses.
