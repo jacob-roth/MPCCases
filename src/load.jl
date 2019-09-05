@@ -15,6 +15,7 @@ struct Bus
 end
 
 struct Line
+  id::Int
   from::Int
   to::Int
   r::Float64
@@ -132,7 +133,7 @@ function load_case(case_name, case_path, lineOff=Line(); other::Bool=true)
   for i in lines_on
     @assert branch_arr[i,11] == 1  #should be on since we discarded all other
     lit += 1
-    lines[lit] = Line(branch_arr[i, 1:13]...)
+    lines[lit] = Line(i, branch_arr[i, 1:13]...)
     if lines[lit].angmin>-360 || lines[lit].angmax<360
       error("Bounds of voltage angles are still to be implemented.")
     end
@@ -387,11 +388,11 @@ function computeAdmittanceMatrix(lines, buses, baseMVA, busDict;
 end
 function computeAdmittanceMatrix(opfdata::OPFData, options::Dict=Dict())
   # parse options
-  lossless = haskey(options, :lossless) ? options[:lossless] : false
+  lossless       = haskey(options, :lossless)       ? options[:lossless]       : false
   current_rating = haskey(options, :current_rating) ? options[:current_rating] : false
-  remove_Bshunt = haskey(options, :remove_Bshunt) ? options[:remove_Bshunt] : false
-  remove_tap = haskey(options, :remove_tap) ? options[:remove_tap] : false
-  verb = haskey(options, :verb) ? options[:verb] : false
+  remove_Bshunt  = haskey(options, :remove_Bshunt)  ? options[:remove_Bshunt]  : false
+  remove_tap     = haskey(options, :remove_tap)     ? options[:remove_tap]     : false
+  verb           = haskey(options, :verb)           ? options[:verb]           : false
   if lossless && !current_rating
       println("warning: lossless assumption requires `current_rating` instead of `power_rating`\n")
       current_rating = true
