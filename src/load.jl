@@ -30,7 +30,7 @@ struct Line
   angmin::Float64
   angmax::Float64
 end
-Line() = Line(0,0,0.,0.,0.,0.,0.,0.,0.,0.,0,0.,0.)
+Line() = Line(0,0,0,0.,0.,0.,0.,0.,0.,0.,0.,0,0.,0.)
 
 mutable struct Gener
   # .gen fields
