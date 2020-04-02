@@ -83,9 +83,7 @@ mutable struct CaseData
 end
 
 function load_case(case_name, case_path, lineOff=Line(); other::Bool=true)
-  if ~(case_path[end] ∈ Set(['/',"/"]))
-        case_path = case_path * "/"
-  end
+  case_path = complete_file_path(case_path)
   case_name = case_path * case_name
 
   #
@@ -460,4 +458,120 @@ function mapGenersToBuses(opfdata::OPFData)
     end
   end
   return D
+end
+
+
+function adj_params(read_file_path::String, file_name::String, file_ext::String,  P::Bool, Q::Bool; prod_fac::Union{Int64, Float64}=1.0, add_fac::Union{Int, Float64}=0.0, vals::VecOrMat{<:Real}=zeros(Int, 0), start_x_idx::Int=1, end_x_idx::Int=0, overwrite_file::Bool=false, write_file_path::String="", T::Type=Float64)
+    read_file_path = complete_file_path(read_file_path)
+    arr = readdlm(read_file_path * file_name * file_ext, T)
+    y_idx = get_y_idx(file_ext, P, Q)
+    if isempty(vals)
+        end_x_idx = end_x_idx >= start_x_idx ? end_x_idx : size(arr, 1)
+        vals = generate_vals(arr, start_x_idx, end_x_idx, y_idx, prod_fac, add_fac)
+    else
+        vals = reshape_vals(vals, P, Q)
+    end
+    adj_arr = adj_vals_in_arr(arr, start_x_idx, y_idx, vals)
+    write_file_path = complete_file_path(mkpath(
+        overwrite_file              ?   read_file_path  :
+        ~isempty(write_file_path)   ?   write_file_path :
+        read_file_path * "adj/"))
+    open(write_file_path * file_name * file_ext, "w") do io
+        writedlm(io, arr)
+    end
+end
+
+
+function adj_params(read_file_path::String, file_name::String, file_ext::String, c2::Bool, c1::Bool, c0::Bool; prod_fac::Union{Int64, Float64}=1.0, add_fac::Union{Int, Float64}=0.0, vals::VecOrMat{<:Real}=zeros(Int, 0), start_x_idx::Int=1, end_x_idx::Int=0, overwrite_file::Bool=false, write_file_path::String="", T::Type=Float64)
+    read_file_path = complete_file_path(read_file_path)
+    arr = readdlm(read_file_path * file_name * file_ext, T)
+    y_idx = get_y_idx(file_ext, c2, c1, c0)
+    if isempty(vals)
+        end_x_idx = end_x_idx >= start_x_idx ? end_x_idx : size(arr, 1)
+        vals = generate_vals(arr, start_x_idx, end_x_idx, y_idx, prod_fac, add_fac)
+    else
+        vals = reshape_vals(vals, P, Q)
+    end
+    adj_arr = adj_vals_in_arr(arr, start_x_idx, y_idx, vals)
+    write_file_path = complete_file_path(mkpath(
+        overwrite_file              ?   read_file_path  : 
+        ~isempty(write_file_path)   ?   write_file_path :
+        read_file_path * "adj/"))
+    open(write_file_path * file_name * file_ext, "w") do io
+        writedlm(io, arr)
+    end
+end
+
+
+function complete_file_path(file_path::String)
+    return ~(file_path[end] ∈ Set(['/',"/"])) ? file_path * "/" : file_path
+end
+
+
+function get_y_idx(file_ext::String, P::Bool, Q::Bool)
+    if file_ext == ".bus"
+        return P & Q ? (3:4) : P ? (3:3) : (4:4)
+    elseif file_ext == ".gen"
+        return P & Q ? (2:3) : P ? (2:2) : (3:3)
+    else
+        throw(DomainError(file_ext, "file_ext is not properly defined for the number of boolean parameters given."))
+    end
+end
+
+
+function get_y_idx(file_ext::String, c2::Bool, c1::Bool, c0::Bool)
+    if file_ext == ".gencost"
+        return c2 & c1 & c0 ? (5:7) : c2 & c1 ? (5:6) : c2 & c0 ? (5:2:7) : c1 & c0 ? (6:7) : c2 ? (5:5) : c1 ? (6:6) : (7:7)
+    else
+        throw(DomainError(file_ext, "file_ext is not properly defined for the number of boolean parameters given."))
+    end
+end
+
+
+function generate_vals(arr::Array{<:Real, 2}, start_x_idx::Int, end_x_idx::Int, y_idx::OrdinalRange{<:Real}, prod_fac::Union{Int64,Float64}, add_fac::Union{Int64, Float64})
+    subset_arr = arr[start_x_idx:end_x_idx, y_idx]
+    return (prod_fac .* subset_arr) .+ add_fac
+end
+
+
+function reshape_vals(vals::Array{<:Real}, P::Bool, Q::Bool)
+    if size(vals, 2) == P + Q
+        return vals
+    elseif size(vals, 2) == 1
+        if P & Q
+            return reshape(vals, :, 2)
+        elseif P | Q
+            return reshape(vals, :, 1)
+        else
+            throw(DomainError("vals is not properly defined for the number of boolean parameters given."))
+        end
+    else
+        throw(DomainError("vals is not properly defined for the number of boolean parameters given."))
+    end
+end
+
+
+function reshape_vals(vals::Array{<:Real}, c2::Bool, c1::Bool, c0::Bool)
+    if size(vals, 2) == c2 + c1 + c0
+        return vals
+    elseif size(vals, 2) == 1
+        if c2 & c1 & c0
+            return reshape(vals, :, 3)
+        elseif (c2 & c1) | (c2 & c0) | (c1 & c0)
+            return reshape(vals, :, 2)
+        elseif c2 | c1 | c0
+            return reshape(vals, :, 1)
+        else
+            throw(DomainError("vals is not properly defined for the number of boolean parameters given."))
+        end
+    else
+        throw(DomainError("vals is not properly defined for the number of boolean parameters given."))
+    end
+end
+
+
+function adj_vals_in_arr(arr::Array{<:Real,2}, start_x_idx::Int, y_idx::OrdinalRange{<:Real}, reshaped_vals::Array)
+    vals_length = size(reshaped_vals, 1)
+    arr[start_x_idx : start_x_idx+vals_length-1, y_idx] = reshaped_vals
+    return arr
 end
