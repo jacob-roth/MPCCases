@@ -448,6 +448,7 @@ function mapGenersToBuses(buses, generators,busDict)
   end
   return gen2bus
 end
+
 # convert the above into a dict
 function mapGenersToBuses(opfdata::OPFData)
   GEN_idx_to_id = Dict((v,k) for (k,v) in enumerate(mapGenersToBuses(opfdata.buses, opfdata.generators, mapIdxToBusId(opfdata))))
@@ -460,17 +461,12 @@ function mapGenersToBuses(opfdata::OPFData)
   return D
 end
 
-
-function adj_params(read_file_path::String, file_name::String, file_ext::String,  P::Bool, Q::Bool; prod_fac::Union{Int64, Float64}=1.0, add_fac::Union{Int, Float64}=0.0, vals::VecOrMat{<:Real}=zeros(Int, 0), start_x_idx::Int=1, end_x_idx::Int=0, overwrite_file::Bool=false, write_file_path::String="", T::Type=Float64)
+function adj_params(read_file_path::String, file_name::String, file_ext::String,  P::Bool, Q::Bool; prod_fac::Union{Int, Float64}=1, add_fac::Union{Int, Float64}=0, start_x_idx::Int=1, end_x_idx::Int=0, overwrite_file::Bool=false, write_file_path::String="", T::Type=Float64)
     read_file_path = complete_file_path(read_file_path)
     arr = readdlm(read_file_path * file_name * file_ext, T)
     y_idx = get_y_idx(file_ext, P, Q)
-    if isempty(vals)
-        end_x_idx = end_x_idx >= start_x_idx ? end_x_idx : size(arr, 1)
-        vals = generate_vals(arr, start_x_idx, end_x_idx, y_idx, prod_fac, add_fac)
-    else
-        vals = reshape_vals(vals, P, Q)
-    end
+    end_x_idx = end_x_idx >= start_x_idx ? end_x_idx : size(arr, 1)
+    vals = generate_vals(arr, start_x_idx, end_x_idx, y_idx, prod_fac, add_fac)
     adj_arr = adj_vals_in_arr(arr, start_x_idx, y_idx, vals)
     write_file_path = complete_file_path(mkpath(
         overwrite_file              ?   read_file_path  :
@@ -481,20 +477,14 @@ function adj_params(read_file_path::String, file_name::String, file_ext::String,
     end
 end
 
-
-function adj_params(read_file_path::String, file_name::String, file_ext::String, c2::Bool, c1::Bool, c0::Bool; prod_fac::Union{Int64, Float64}=1.0, add_fac::Union{Int, Float64}=0.0, vals::VecOrMat{<:Real}=zeros(Int, 0), start_x_idx::Int=1, end_x_idx::Int=0, overwrite_file::Bool=false, write_file_path::String="", T::Type=Float64)
+function adj_params(read_file_path::String, file_name::String, file_ext::String,  P::Bool, Q::Bool; vals::VecOrMat{<:Real}=zeros(Int,0), start_x_idx::Int=1, overwrite_file::Bool=false, write_file_path::String="", T::Type=Float64)
     read_file_path = complete_file_path(read_file_path)
     arr = readdlm(read_file_path * file_name * file_ext, T)
-    y_idx = get_y_idx(file_ext, c2, c1, c0)
-    if isempty(vals)
-        end_x_idx = end_x_idx >= start_x_idx ? end_x_idx : size(arr, 1)
-        vals = generate_vals(arr, start_x_idx, end_x_idx, y_idx, prod_fac, add_fac)
-    else
-        vals = reshape_vals(vals, P, Q)
-    end
+    y_idx = get_y_idx(file_ext, P, Q)
+    vals = isempty(vals) ? arr[start_x_idx:end, y_idx] : reshape_vals(vals, P, Q)
     adj_arr = adj_vals_in_arr(arr, start_x_idx, y_idx, vals)
     write_file_path = complete_file_path(mkpath(
-        overwrite_file              ?   read_file_path  : 
+        overwrite_file              ?   read_file_path  :
         ~isempty(write_file_path)   ?   write_file_path :
         read_file_path * "adj/"))
     open(write_file_path * file_name * file_ext, "w") do io
@@ -502,11 +492,40 @@ function adj_params(read_file_path::String, file_name::String, file_ext::String,
     end
 end
 
+function adj_params(read_file_path::String, file_name::String, file_ext::String, c2::Bool, c1::Bool, c0::Bool; prod_fac::Union{Int, Float64}=1, add_fac::Union{Int, Float64}=0,  start_x_idx::Int=1, end_x_idx::Int=0, overwrite_file::Bool=false, write_file_path::String="", T::Type=Float64)
+    read_file_path = complete_file_path(read_file_path)
+    arr = readdlm(read_file_path * file_name * file_ext, T)
+    y_idx = get_y_idx(file_ext, c2, c1, c0)
+    end_x_idx = end_x_idx >= start_x_idx ? end_x_idx : size(arr, 1)
+    vals = generate_vals(arr, start_x_idx, end_x_idx, y_idx, prod_fac, add_fac)
+    adj_arr = adj_vals_in_arr(arr, start_x_idx, y_idx, vals)
+    write_file_path = complete_file_path(mkpath(
+        overwrite_file              ?   read_file_path  :
+        ~isempty(write_file_path)   ?   write_file_path :
+        read_file_path * "adj/"))
+    open(write_file_path * file_name * file_ext, "w") do io
+        writedlm(io, arr)
+    end
+end
+
+function adj_params(read_file_path::String, file_name::String, file_ext::String, c2::Bool, c1::Bool, c0::Bool; vals::VecOrMat{<:Real}=zeros(Int,0), start_x_idx::Int=1, overwrite_file::Bool=false, write_file_path::String="", T::Type=Float64)
+    read_file_path = complete_file_path(read_file_path)
+    arr = readdlm(read_file_path * file_name * file_ext, T)
+    y_idx = get_y_idx(file_ext, c2, c1, c0)
+    vals = isempty(vals) ? arr[start_x_idx:end, y_idx] : reshape_vals(vals, c2, c1, c0)
+    adj_arr = adj_vals_in_arr(arr, start_x_idx, y_idx, vals)
+    write_file_path = complete_file_path(mkpath(
+        overwrite_file              ?   read_file_path  :
+        ~isempty(write_file_path)   ?   write_file_path :
+        read_file_path * "adj/"))
+    open(write_file_path * file_name * file_ext, "w") do io
+        writedlm(io, arr)
+    end
+end
 
 function complete_file_path(file_path::String)
     return ~(file_path[end] ∈ Set(['/',"/"])) ? file_path * "/" : file_path
 end
-
 
 function get_y_idx(file_ext::String, P::Bool, Q::Bool)
     if file_ext == ".bus"
@@ -518,7 +537,6 @@ function get_y_idx(file_ext::String, P::Bool, Q::Bool)
     end
 end
 
-
 function get_y_idx(file_ext::String, c2::Bool, c1::Bool, c0::Bool)
     if file_ext == ".gencost"
         return c2 & c1 & c0 ? (5:7) : c2 & c1 ? (5:6) : c2 & c0 ? (5:2:7) : c1 & c0 ? (6:7) : c2 ? (5:5) : c1 ? (6:6) : (7:7)
@@ -527,12 +545,10 @@ function get_y_idx(file_ext::String, c2::Bool, c1::Bool, c0::Bool)
     end
 end
 
-
-function generate_vals(arr::Array{<:Real, 2}, start_x_idx::Int, end_x_idx::Int, y_idx::OrdinalRange{<:Real}, prod_fac::Union{Int64,Float64}, add_fac::Union{Int64, Float64})
+function generate_vals(arr::Array{<:Real, 2}, start_x_idx::Int, end_x_idx::Int, y_idx::OrdinalRange{<:Real}, prod_fac::Union{Int,Float64}, add_fac::Union{Int, Float64})
     subset_arr = arr[start_x_idx:end_x_idx, y_idx]
     return (prod_fac .* subset_arr) .+ add_fac
 end
-
 
 function reshape_vals(vals::Array{<:Real}, P::Bool, Q::Bool)
     if size(vals, 2) == P + Q
@@ -549,7 +565,6 @@ function reshape_vals(vals::Array{<:Real}, P::Bool, Q::Bool)
         throw(DomainError("vals is not properly defined for the number of boolean parameters given."))
     end
 end
-
 
 function reshape_vals(vals::Array{<:Real}, c2::Bool, c1::Bool, c0::Bool)
     if size(vals, 2) == c2 + c1 + c0
@@ -569,9 +584,19 @@ function reshape_vals(vals::Array{<:Real}, c2::Bool, c1::Bool, c0::Bool)
     end
 end
 
-
 function adj_vals_in_arr(arr::Array{<:Real,2}, start_x_idx::Int, y_idx::OrdinalRange{<:Real}, reshaped_vals::Array)
     vals_length = size(reshaped_vals, 1)
     arr[start_x_idx : start_x_idx+vals_length-1, y_idx] = reshaped_vals
     return arr
+end
+
+function cp_remaining_files(src_path::String, dst_path::String, file_name::String)
+    file_exts = [".bus", ".gen", ".gencost"]
+    src_file_path = complete_file_path(src_path) * file_name
+    dst_file_path = complete_file_path(dst_path) * file_name
+    for ext in file_exts
+        if ~isfile(dst_file_path * ext)
+            cp(src_file_path * ext, dst_file_path * ext, force=false)
+        end
+    end
 end
