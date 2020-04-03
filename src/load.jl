@@ -461,7 +461,7 @@ function mapGenersToBuses(opfdata::OPFData)
   return D
 end
 
-function adj_params(read_file_path::String, file_name::String, file_ext::String,  P::Bool, Q::Bool; prod_fac::Union{Int, Float64}=1, add_fac::Union{Int, Float64}=0, start_x_idx::Int=1, end_x_idx::Int=0, overwrite_file::Bool=false, write_file_path::String="", T::Type=Float64)
+function adj_params(read_file_path::String, file_name::String, file_ext::String,  P::Bool, Q::Bool, prod_fac::Union{Int, Float64}=1, add_fac::Union{Int, Float64}=0; start_x_idx::Int=1, end_x_idx::Int=0, overwrite_file::Bool=false, write_file_path::String="", T::Type=Float64)
     read_file_path = complete_file_path(read_file_path)
     arr = readdlm(read_file_path * file_name * file_ext, T)
     y_idx = get_y_idx(file_ext, P, Q)
@@ -477,7 +477,7 @@ function adj_params(read_file_path::String, file_name::String, file_ext::String,
     end
 end
 
-function adj_params(read_file_path::String, file_name::String, file_ext::String,  P::Bool, Q::Bool; vals::VecOrMat{<:Real}=zeros(Int,0), start_x_idx::Int=1, overwrite_file::Bool=false, write_file_path::String="", T::Type=Float64)
+function adj_params(read_file_path::String, file_name::String, file_ext::String,  P::Bool, Q::Bool, vals::VecOrMat{<:Real}=zeros(Int,0); start_x_idx::Int=1, overwrite_file::Bool=false, write_file_path::String="", T::Type=Float64)
     read_file_path = complete_file_path(read_file_path)
     arr = readdlm(read_file_path * file_name * file_ext, T)
     y_idx = get_y_idx(file_ext, P, Q)
@@ -492,7 +492,7 @@ function adj_params(read_file_path::String, file_name::String, file_ext::String,
     end
 end
 
-function adj_params(read_file_path::String, file_name::String, file_ext::String, c2::Bool, c1::Bool, c0::Bool; prod_fac::Union{Int, Float64}=1, add_fac::Union{Int, Float64}=0,  start_x_idx::Int=1, end_x_idx::Int=0, overwrite_file::Bool=false, write_file_path::String="", T::Type=Float64)
+function adj_params(read_file_path::String, file_name::String, file_ext::String, c2::Bool, c1::Bool, c0::Bool, prod_fac::Union{Int, Float64}=1, add_fac::Union{Int, Float64}=0; start_x_idx::Int=1, end_x_idx::Int=0, overwrite_file::Bool=false, write_file_path::String="", T::Type=Float64)
     read_file_path = complete_file_path(read_file_path)
     arr = readdlm(read_file_path * file_name * file_ext, T)
     y_idx = get_y_idx(file_ext, c2, c1, c0)
@@ -508,7 +508,7 @@ function adj_params(read_file_path::String, file_name::String, file_ext::String,
     end
 end
 
-function adj_params(read_file_path::String, file_name::String, file_ext::String, c2::Bool, c1::Bool, c0::Bool; vals::VecOrMat{<:Real}=zeros(Int,0), start_x_idx::Int=1, overwrite_file::Bool=false, write_file_path::String="", T::Type=Float64)
+function adj_params(read_file_path::String, file_name::String, file_ext::String, c2::Bool, c1::Bool, c0::Bool, vals::VecOrMat{<:Real}=zeros(Int,0); start_x_idx::Int=1, overwrite_file::Bool=false, write_file_path::String="", T::Type=Float64)
     read_file_path = complete_file_path(read_file_path)
     arr = readdlm(read_file_path * file_name * file_ext, T)
     y_idx = get_y_idx(file_ext, c2, c1, c0)
@@ -591,7 +591,7 @@ function adj_vals_in_arr(arr::Array{<:Real,2}, start_x_idx::Int, y_idx::OrdinalR
 end
 
 function cp_remaining_files(src_path::String, dst_path::String, file_name::String)
-    file_exts = [".bus", ".gen", ".gencost"]
+    file_exts = [".bus", ".gen", ".gencost", ".branch", ".m", ".phys"]
     src_file_path = complete_file_path(src_path) * file_name
     dst_file_path = complete_file_path(dst_path) * file_name
     for ext in file_exts
