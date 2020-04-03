@@ -591,7 +591,7 @@ function adj_vals_in_arr(arr::Array{<:Real,2}, start_x_idx::Int, y_idx::OrdinalR
 end
 
 function cp_remaining_files(src_path::String, dst_path::String, file_name::String)
-    file_exts = [".bus", ".gen", ".gencost", ".branch", ".m", ".phys"]
+    file_exts = [".bus", ".gen", ".gencost", ".branch", ".phys"]
     src_file_path = complete_file_path(src_path) * file_name
     dst_file_path = complete_file_path(dst_path) * file_name
     for ext in file_exts
