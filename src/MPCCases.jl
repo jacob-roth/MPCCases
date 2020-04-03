@@ -11,5 +11,6 @@ export mapGenersToBuses
 export computeAdmitances, computeAdmittances, computeAdmittanceMatrix
 export OPFData
 export CaseData
+export adj_params, complete_file_path, get_y_idx, generate_vals, reshape_vals, adj_vals_in_arr, cp_remaining_files
 
 end # module
