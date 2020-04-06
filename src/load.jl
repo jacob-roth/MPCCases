@@ -461,13 +461,13 @@ function mapGenersToBuses(opfdata::OPFData)
   return D
 end
 
-function adj_params(read_file_path::String, file_name::String, file_ext::String,  P::Bool, Q::Bool, prod_fac::Union{Int, Float64}=1, add_fac::Union{Int, Float64}=0; start_x_idx::Int=1, end_x_idx::Int=0, T::Type=Float64, mean::Union{Int,Float64}=0, sd::Union{Int,Float64}=1, overwrite_file::Bool=false, write_file_path::String="", seed::Union{Nothing, Int}=nothing)
+function adj_params(read_file_path::String, file_name::String, file_ext::String,  P::Bool, Q::Bool, prod_fac::Union{Int, Float64}=1, add_fac::Union{Int, Float64}=0; start_x_idx::Int=1, end_x_idx::Int=0, T::Type=Float64, mean::Union{Nothing, Int, Float64}=nothing, sd::Union{Nothing, Int, Float64}=nothing, overwrite_file::Bool=false, write_file_path::String="", seed::Union{Nothing, Int}=nothing)
     read_file_path = complete_file_path(read_file_path)
     arr = readdlm(read_file_path * file_name * file_ext, T)
     y_idx = get_y_idx(file_ext, P, Q)
     end_x_idx = end_x_idx >= start_x_idx ? end_x_idx : size(arr, 1)
     vals = generate_vals(arr, start_x_idx, end_x_idx, y_idx, prod_fac, add_fac)
-    perturbed_vals = add_gaussian_noise(vals, mean, sd, seed)
+    perturbed_vals = isnothing(mean) | isnothing(sd) ? vals : add_gaussian_noise(vals, mean, sd, seed)
     adj_arr = adj_vals_in_arr(arr, start_x_idx, y_idx, perturbed_vals)
     write_file_path = complete_file_path(mkpath(
         overwrite_file              ?   read_file_path  :
@@ -478,12 +478,12 @@ function adj_params(read_file_path::String, file_name::String, file_ext::String,
     end
 end
 
-function adj_params(read_file_path::String, file_name::String, file_ext::String,  P::Bool, Q::Bool, vals::VecOrMat{<:Real}=zeros(Int,0); start_x_idx::Int=1,  T::Type=Float64, mean::Union{Int,Float64}=0, sd::Union{Int,Float64}=1, overwrite_file::Bool=false, write_file_path::String="", seed::Union{Nothing, Int}=nothing)
+function adj_params(read_file_path::String, file_name::String, file_ext::String,  P::Bool, Q::Bool, vals::VecOrMat{<:Real}=zeros(Int,0); start_x_idx::Int=1,  T::Type=Float64, mean::Union{Nothing, Int, Float64}=nothing, sd::Union{Nothing, Int, Float64}=nothing, overwrite_file::Bool=false, write_file_path::String="", seed::Union{Nothing, Int}=nothing)
     read_file_path = complete_file_path(read_file_path)
     arr = readdlm(read_file_path * file_name * file_ext, T)
     y_idx = get_y_idx(file_ext, P, Q)
     vals = isempty(vals) ? arr[start_x_idx:end, y_idx] : reshape_vals(vals, P, Q)
-    perturbed_vals = add_gaussian_noise(vals, mean, sd, seed)
+    perturbed_vals = isnothing(mean) | isnothing(sd) ? vals : add_gaussian_noise(vals, mean, sd, seed)
     adj_arr = adj_vals_in_arr(arr, start_x_idx, y_idx, perturbed_vals)
     write_file_path = complete_file_path(mkpath(
         overwrite_file              ?   read_file_path  :
@@ -494,13 +494,13 @@ function adj_params(read_file_path::String, file_name::String, file_ext::String,
     end
 end
 
-function adj_params(read_file_path::String, file_name::String, file_ext::String, c2::Bool, c1::Bool, c0::Bool, prod_fac::Union{Int, Float64}=1, add_fac::Union{Int, Float64}=0; start_x_idx::Int=1, end_x_idx::Int=0, T::Type=Float64, mean::Union{Int,Float64}=0, sd::Union{Int,Float64}=1, overwrite_file::Bool=false, write_file_path::String="", seed::Union{Nothing, Int}=nothing)
+function adj_params(read_file_path::String, file_name::String, file_ext::String, c2::Bool, c1::Bool, c0::Bool, prod_fac::Union{Int, Float64}=1, add_fac::Union{Int, Float64}=0; start_x_idx::Int=1, end_x_idx::Int=0, T::Type=Float64, mean::Union{Nothing, Int, Float64}=nothing, sd::Union{Nothing, Int, Float64}=nothing, overwrite_file::Bool=false, write_file_path::String="", seed::Union{Nothing, Int}=nothing)
     read_file_path = complete_file_path(read_file_path)
     arr = readdlm(read_file_path * file_name * file_ext, T)
     y_idx = get_y_idx(file_ext, c2, c1, c0)
     end_x_idx = end_x_idx >= start_x_idx ? end_x_idx : size(arr, 1)
     vals = generate_vals(arr, start_x_idx, end_x_idx, y_idx, prod_fac, add_fac)
-    perturbed_vals = add_gaussian_noise(vals, mean, sd, seed)
+    perturbed_vals = isnothing(mean) | isnothing(sd) ? vals : add_gaussian_noise(vals, mean, sd, seed)
     adj_arr = adj_vals_in_arr(arr, start_x_idx, y_idx, perturbed_vals)
     write_file_path = complete_file_path(mkpath(
         overwrite_file              ?   read_file_path  :
@@ -511,12 +511,13 @@ function adj_params(read_file_path::String, file_name::String, file_ext::String,
     end
 end
 
-function adj_params(read_file_path::String, file_name::String, file_ext::String, c2::Bool, c1::Bool, c0::Bool, vals::VecOrMat{<:Real}=zeros(Int,0); start_x_idx::Int=1, T::Type=Float64, mean::Union{Int,Float64}=0, sd::Union{Int,Float64}=1, overwrite_file::Bool=false, write_file_path::String="", seed::Union{Nothing, Int}=nothing)
+function adj_params(read_file_path::String, file_name::String, file_ext::String, c2::Bool, c1::Bool, c0::Bool, vals::VecOrMat{<:Real}=zeros(Int,0); start_x_idx::Int=1, T::Type=Float64, mean::Union{Nothing, Int, Float64}=nothing, sd::Union{Nothing, Int, Float64}=nothing, overwrite_file::Bool=false, write_file_path::String="", seed::Union{Nothing, Int}=nothing)
     read_file_path = complete_file_path(read_file_path)
     arr = readdlm(read_file_path * file_name * file_ext, T)
     y_idx = get_y_idx(file_ext, c2, c1, c0)
     vals = isempty(vals) ? arr[start_x_idx:end, y_idx] : reshape_vals(vals, c2, c1, c0)
-    adj_arr = adj_vals_in_arr(arr, start_x_idx, y_idx, vals)
+    perturbed_vals = isnothing(mean) | isnothing(sd) ? vals : add_gaussian_noise(vals, mean, sd, seed)
+    adj_arr = adj_vals_in_arr(arr, start_x_idx, y_idx, perturbed_vals)
     write_file_path = complete_file_path(mkpath(
         overwrite_file              ?   read_file_path  :
         ~isempty(write_file_path)   ?   write_file_path :
