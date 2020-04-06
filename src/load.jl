@@ -517,7 +517,7 @@ function adj_params(read_file_path::String, file_name::String, file_ext::String,
     y_idx = get_y_idx(file_ext, c2, c1, c0)
     vals = isempty(vals) ? arr[start_x_idx:end, y_idx] : reshape_vals(vals, c2, c1, c0)
     perturbed_vals = isnothing(mean) | isnothing(sd) ? vals : add_gaussian_noise(vals, mean, sd, seed)
-    adj_arr = adj_vals_in_arr(arr, start_x_idx, y_idx, vals)
+    adj_arr = adj_vals_in_arr(arr, start_x_idx, y_idx, perturbed_vals)
     write_file_path = complete_file_path(mkpath(
         overwrite_file              ?   read_file_path  :
         ~isempty(write_file_path)   ?   write_file_path :
