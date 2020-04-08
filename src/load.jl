@@ -609,12 +609,14 @@ function cp_remaining_files(src_path::String, dst_path::String, file_name::Strin
     end
 end
 
-function adj_multi_params(read_file_path::String, file_name::String, file_ext::NTuple{N, String}, P::Tuple{Vararg{Bool}}, Q::Tuple{Vararg{Bool}}, c2::Bool, c1::Bool, c0::Bool, prod_fac::NTuple{N, <:Union{Int, Float64}}, add_fac::NTuple{N, <:Union{Int, Float64}}; start_x_idx::Int=1, end_x_idx::Int=0, T::Type=Float64, mean::Union{Nothing, NTuple{N, <:Union{Int, Float64}}}=nothing, sd::Union{Nothing, NTuple{N, <:Union{Int, Float64}}}=nothing, overwrite_file::Bool=false, write_file_path::String="", seed::Union{Nothing, Int}=nothing) where {N}
+function adj_multi_params(read_file_path::String, file_name::String, file_ext::NTuple{N, String}, P::Union{Bool, Tuple{Bool, Vararg{Bool}}}, Q::Union{Bool, Tuple{Bool, Vararg{Bool}}}, c2::Bool, c1::Bool, c0::Bool, prod_fac::Union{<:Union{Int, Float64}, NTuple{N, <:Union{Int, Float64}}}, add_fac::Union{<:Union{Int, Float64}, NTuple{N, <:Union{Int, Float64}}}; start_x_idx::Int=1, end_x_idx::Int=0, T::Type=Float64, mean::Union{Nothing, NTuple{N, <:Union{Int, Float64}}}=nothing, sd::Union{Nothing, NTuple{N, <:Union{Int, Float64}}}=nothing, overwrite_file::Bool=false, write_file_path::String="", seed::Union{Nothing, Int}=nothing) where {N}
     @assert file_ext == Tuple(unique(file_ext))
 
     PQ_file_ext = filter(x -> x in [".bus", ".gen"], [file_ext...])
     for idx in 1:length(file_ext)
-        f_ext, p_fac, a_fac = file_ext[idx], prod_fac[idx], add_fac[idx]
+        f_ext = file_ext[idx]
+        p_fac = isa(prod_fac, Union{Int, Float64}) ? prod_fac : prod_fac[idx]
+        a_fac = isa(add_fac, Union{Int, Float64}) ? add_fac : add_fac[idx]
         m = isnothing(mean) ? mean : mean[idx]
         s = isnothing(sd) ? sd : sd[idx]
         if f_ext in [".bus", ".gen"]
@@ -629,7 +631,7 @@ function adj_multi_params(read_file_path::String, file_name::String, file_ext::N
     end
 end
 
-function adj_multi_params(read_file_path::String, file_name::String, file_ext::NTuple{N, String}, P::Tuple{Vararg{Bool}}, Q::Tuple{Vararg{Bool}},  c2::Bool, c1::Bool, c0::Bool, vals::NTuple{N, VecOrMat{<:Real}}; start_x_idx::Int=1, end_x_idx::Int=0, T::Type=Float64, mean::Union{Nothing, NTuple{N, <:Union{Int, Float64}}}=nothing, sd::Union{Nothing, NTuple{N, <:Union{Int, Float64}}}=nothing, overwrite_file::Bool=false, write_file_path::String="", seed::Union{Nothing, Int}=nothing) where {N}
+function adj_multi_params(read_file_path::String, file_name::String, file_ext::NTuple{N, String}, P::Union{Bool, Tuple{Bool, Vararg{Bool}}}, Q::Union{Bool, Tuple{Bool, Vararg{Bool}}},  c2::Bool, c1::Bool, c0::Bool, vals::Union{VecOrMat{<:Real}, NTuple{N, VecOrMat{<:Real}}}; start_x_idx::Int=1, end_x_idx::Int=0, T::Type=Float64, mean::Union{Nothing, NTuple{N, <:Union{Int, Float64}}}=nothing, sd::Union{Nothing, NTuple{N, <:Union{Int, Float64}}}=nothing, overwrite_file::Bool=false, write_file_path::String="", seed::Union{Nothing, Int}=nothing) where {N}
     @assert file_ext == Tuple(unique(file_ext))
 
     PQ_file_ext = filter(x -> x in [".bus", ".gen"], [file_ext...])
@@ -637,7 +639,7 @@ function adj_multi_params(read_file_path::String, file_name::String, file_ext::N
         f_ext, p_fac, a_fac = file_ext[idx], prod_fac[idx], add_fac[idx]
         m = isnothing(mean) ? mean : mean[idx]
         s = isnothing(sd) ? sd : sd[idx]
-        val = vals[idx]
+        val = isa(vals, VecOrMat{<:Real}) ? vals : vals[idx]
         if f_ext in [".bus", ".gen"]
             PQ_idx = findfirst(x -> x == f_ext, PQ_file_ext)
             p, q = P[PQ_idx], Q[PQ_idx]
