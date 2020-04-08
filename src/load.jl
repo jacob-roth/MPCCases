@@ -609,7 +609,7 @@ function cp_remaining_files(src_path::String, dst_path::String, file_name::Strin
     end
 end
 
-function adj_multi_params(read_file_path::String, file_name::String, file_ext::Union{String, NTuple{N, String}}, P::Union{Bool, Tuple{Bool, Vararg{Bool}}}, Q::Union{Bool, Tuple{Bool, Vararg{Bool}}}, c2::Bool, c1::Bool, c0::Bool, prod_fac::Union{Int, Float64, NTuple{N, <:Union{Int, Float64}}}, add_fac::Union{Int, Float64, NTuple{N, <:Union{Int, Float64}}}; start_x_idx::Int=1, end_x_idx::Int=0, T::Type=Float64, mean::Union{Nothing, Int, Float64, NTuple{N, <:Union{Int, Float64}}}=nothing, sd::Union{Nothing, Int, Float64, NTuple{N, <:Union{Int, Float64}}}=nothing, overwrite_file::Bool=false, write_file_path::String="", seed::Union{Nothing, Int}=nothing) where {N}
+function adj_multi_params(read_file_path::String, file_name::String, file_ext::Union{String, NTuple{N, String}}, P::Union{Bool, Tuple{Bool, Vararg{Bool}}}, Q::Union{Bool, Tuple{Bool, Vararg{Bool}}}, c2::Bool, c1::Bool, c0::Bool, prod_fac::Union{Int, Float64, NTuple{N, <:Union{Int, Float64}}}=1, add_fac::Union{Int, Float64, NTuple{N, <:Union{Int, Float64}}}=0; start_x_idx::Int=1, end_x_idx::Int=0, T::Type=Float64, mean::Union{Nothing, Int, Float64, NTuple{N, <:Union{Int, Float64}}}=nothing, sd::Union{Nothing, Int, Float64, NTuple{N, <:Union{Int, Float64}}}=nothing, overwrite_file::Bool=false, write_file_path::String="", seed::Union{Nothing, Int}=nothing) where {N}
     if isa(file_ext, Tuple{Vararg{String}})
         @assert file_ext == Tuple(unique(file_ext))
         PQ_file_ext = filter(x -> x in [".bus", ".gen"], [file_ext...])
@@ -641,7 +641,7 @@ function adj_multi_params(read_file_path::String, file_name::String, file_ext::U
     end
 end
 
-function adj_multi_params(read_file_path::String, file_name::String, file_ext::Union{String, NTuple{N, String}}, P::Union{Bool, Tuple{Bool, Vararg{Bool}}}, Q::Union{Bool, Tuple{Bool, Vararg{Bool}}},  c2::Bool, c1::Bool, c0::Bool, vals::Union{VecOrMat{<:Real}, NTuple{N, VecOrMat{<:Real}}}; start_x_idx::Int=1, end_x_idx::Int=0, T::Type=Float64, mean::Union{Nothing, Int, Float64, NTuple{N, <:Union{Int, Float64}}}=nothing, sd::Union{Nothing, Int, Float64, NTuple{N, <:Union{Int, Float64}}}=nothing, overwrite_file::Bool=false, write_file_path::String="", seed::Union{Nothing, Int}=nothing) where {N}
+function adj_multi_params(read_file_path::String, file_name::String, file_ext::Union{String, NTuple{N, String}}, P::Union{Bool, Tuple{Bool, Vararg{Bool}}}, Q::Union{Bool, Tuple{Bool, Vararg{Bool}}}, c2::Bool, c1::Bool, c0::Bool, vals::Union{VecOrMat{<:Real}, NTuple{N, VecOrMat{<:Real}}}; start_x_idx::Int=1, T::Type=Float64, mean::Union{Nothing, Int, Float64, NTuple{N, <:Union{Int, Float64}}}=nothing, sd::Union{Nothing, Int, Float64, NTuple{N, <:Union{Int, Float64}}}=nothing, overwrite_file::Bool=false, write_file_path::String="", seed::Union{Nothing, Int}=nothing) where {N}
     if isa(file_ext, Tuple{Vararg{String}})
         @assert file_ext == Tuple(unique(file_ext))
         PQ_file_ext = filter(x -> x in [".bus", ".gen"], [file_ext...])
