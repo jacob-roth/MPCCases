@@ -636,7 +636,7 @@ function adj_multi_params(read_file_path::String, file_name::String, file_ext::N
 
     PQ_file_ext = filter(x -> x in [".bus", ".gen"], [file_ext...])
     for idx in 1:length(file_ext)
-        f_ext, p_fac, a_fac = file_ext[idx], prod_fac[idx], add_fac[idx]
+        f_ext = file_ext[idx]
         m = isnothing(mean) ? mean : mean[idx]
         s = isnothing(sd) ? sd : sd[idx]
         val = isa(vals, VecOrMat{<:Real}) ? vals : vals[idx]
