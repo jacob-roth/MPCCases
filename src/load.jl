@@ -227,9 +227,7 @@ function load_case(case_name, case_path, lineOff=Line(); other::Bool=true)
   end
 end
 
-function computeAdmitances(lines, buses, baseMVA;
-                           lossless::Bool=false, remove_Bshunt::Bool=false, remove_tap::Bool=false,
-                           verb::Bool=false)
+function computeAdmitances(lines, buses, baseMVA; lossless::Bool=false, remove_Bshunt::Bool=false, remove_tap::Bool=false, verb::Bool=false)
   """ note:
       (1) `remove_Bshunt` refers to both branch and bus shunts
       (2) `remove_tap` removes line ratio and line angle tap adjustments
@@ -319,19 +317,15 @@ function computeAdmitances(lines, buses, baseMVA;
   end
   return YffR, YffI, YttR, YttI, YftR, YftI, YtfR, YtfI, YshR, YshI
 end
-function computeAdmitances(opfdata::OPFData;
-         lossless::Bool=false, remove_Bshunt::Bool=false, remove_tap::Bool=false, verb::Bool=false)
-  return computeAdmitances(opfdata.lines, opfdata.buses, opfdata.baseMVA;
-         lossless=lossless, remove_Bshunt=remove_Bshunt, remove_tap=remove_tap, verb=verb)
+
+function computeAdmitances(opfdata::OPFData; lossless::Bool=false, remove_Bshunt::Bool=false, remove_tap::Bool=false, verb::Bool=false)
+  return computeAdmitances(opfdata.lines, opfdata.buses, opfdata.baseMVA, lossless=lossless, remove_Bshunt=remove_Bshunt, remove_tap=remove_tap, verb=verb)
 end
 computeAdmittances = computeAdmitances
 
-function computeAdmittanceMatrix(lines, buses, baseMVA, busDict;
-                                 lossless::Bool=true, remove_Bshunt::Bool=true, remove_tap::Bool=true,
-                                 sparse::Bool=true, verb::Bool=false)
-  YffR, YffI, YttR, YttI, YftR, YftI, YtfR, YtfI, YshR, YshI = computeAdmitances(lines, buses, baseMVA;
-                                                               lossless=lossless, remove_Bshunt=remove_Bshunt, remove_tap=remove_tap,
-                                                               verb=verb)
+function computeAdmittanceMatrix(lines, buses, baseMVA, busDict; lossless::Bool=true, remove_Bshunt::Bool=true, remove_tap::Bool=true, sparse::Bool=true, verb::Bool=false)
+
+  YffR, YffI, YttR, YttI, YftR, YftI, YtfR, YtfI, YshR, YshI = computeAdmitances(lines, buses, baseMVA, lossless=lossless, remove_Bshunt=remove_Bshunt, remove_tap=remove_tap, verb=verb)
   nbuses = length(buses)
   nlines = length(lines)
 
@@ -353,51 +347,53 @@ function computeAdmittanceMatrix(lines, buses, baseMVA, busDict;
     return Y
   else
     if sparse
-      B = spzeros(Float64, nbuses, nbuses)
-      G = spzeros(Float64, nbuses, nbuses)
+        B = spzeros(Float64, nbuses, nbuses)
+        G = spzeros(Float64, nbuses, nbuses)
     else
-      B = zeros(Float64, nbuses, nbuses)
-      G = zeros(Float64, nbuses, nbuses)
+        B = zeros(Float64, nbuses, nbuses)
+        G = zeros(Float64, nbuses, nbuses)
     end
     for l in 1:nlines
-      i = busDict[lines[l].from]
-      j = busDict[lines[l].to]
-      B[i,j] += YftI[l]
-      B[j,i] += YtfI[l]
-      B[i,i] += YffI[l]
-      B[j,j] += YttI[l]
+        i = busDict[lines[l].from]
+        j = busDict[lines[l].to]
+        B[i,j] += YftI[l]
+        B[j,i] += YtfI[l]
+        B[i,i] += YffI[l]
+        B[j,j] += YttI[l]
 
-      G[i,j] += YftR[l]
-      G[j,i] += YtfR[l]
-      G[i,i] += YffR[l]
-      G[j,j] += YttR[l]
+        G[i,j] += YftR[l]
+        G[j,i] += YtfR[l]
+        G[i,i] += YffR[l]
+        G[j,j] += YttR[l]
     end
     if remove_Bshunt == false
-      for i in 1:nbuses
-        B[i,i] += YshI[i]
-      end
+        for i in 1:nbuses
+            B[i,i] += YshI[i]
+        end
     end
     for i in 1:nbuses
-      G[i,i] += YshR[i]
+        G[i,i] += YshR[i]
     end
     return G + im*B
   end
 end
+
 function computeAdmittanceMatrix(opfdata::OPFData, options::Dict=Dict())
-  # parse options
-  lossless = haskey(options, :lossless) ? options[:lossless] : false
-  current_rating = haskey(options, :current_rating) ? options[:current_rating] : false
-  remove_Bshunt = haskey(options, :remove_Bshunt) ? options[:remove_Bshunt] : false
-  remove_tap = haskey(options, :remove_tap) ? options[:remove_tap] : false
-  verb = haskey(options, :verb) ? options[:verb] : false
-  if lossless && !current_rating
+    # parse options
+    lossless = haskey(options, :lossless) ? options[:lossless] : false
+    current_rating = haskey(options, :current_rating) ? options[:current_rating] : false
+    remove_Bshunt = haskey(options, :remove_Bshunt) ? options[:remove_Bshunt] : false
+    remove_tap = haskey(options, :remove_tap) ? options[:remove_tap] : false
+    verb = haskey(options, :verb) ? options[:verb] : false
+    if lossless && !current_rating
       println("warning: lossless assumption requires `current_rating` instead of `power_rating`\n")
       current_rating = true
-  end
-  lines = opfdata.lines; buses = opfdata.buses; generators = opfdata.generators; baseMVA = opfdata.baseMVA
-  busIdx = opfdata.BusIdx; FromLines = opfdata.FromLines; ToLines = opfdata.ToLines; BusGeners = opfdata.BusGenerators;
-  nbus = length(buses); nline = length(lines); ngen  = length(generators)
-  return computeAdmittanceMatrix(lines, buses, baseMVA, busIdx;
+    end
+    lines = opfdata.lines
+    buses = opfdata.buses
+    baseMVA = opfdata.baseMVA
+    busIdx = opfdata.BusIdx
+    return computeAdmittanceMatrix(lines, buses, baseMVA, busIdx;
          lossless=lossless, remove_Bshunt=remove_Bshunt, remove_tap=remove_tap, verb=verb)
 end
 
@@ -579,13 +575,13 @@ function adj_params(read_file_path::String, file_name::String, file_ext::Union{S
 end
 
 function complete_file_path(file_path::String)
-    return ~(file_path[end] ∈ Set(['/',"/"])) ? file_path * "/" : file_path
+    return !(file_path[end] ∈ Set(['/',"/"])) ? file_path * "/" : file_path
 end
 
 function fill_write_file_path(curr_write_file_path::String, read_file_path::String, overwrite_file::Bool)
     filled_write_file_path = complete_file_path(mkpath(
         overwrite_file                  ?   read_file_path  :
-        ~isempty(curr_write_file_path)  ?   curr_write_file_path :
+        !isempty(curr_write_file_path)  ?   curr_write_file_path :
                                             read_file_path * "adj/"))
     return filled_write_file_path
 end
@@ -650,9 +646,9 @@ end
 function add_gaussian_noise(vals::Array, mean::Union{Int, Float64}, sd::Union{Int, Float64}, seed::Union{Nothing, Int})
     rng = isnothing(seed) ? MersenneTwister() : MersenneTwister(seed)
     dims = size(vals)
-    noise = randn(rng, dims)
-    scaled_noise = (sd .* noise) .+ mean
-    return vals + scaled_noise
+    gaussian_noise = randn(rng, dims)
+    scaled_gaussian_noise = (sd .* noise) .+ mean
+    return vals + scaled_gaussian_noise
 end
 
 function adj_vals_in_arr(arr::Array{<:Real,2}, start_x_idx::Int, y_idx::OrdinalRange{<:Real}, vals::Array)
@@ -666,7 +662,7 @@ function cp_remaining_files(src_path::String, dst_path::String, file_name::Strin
     src_file_path = complete_file_path(src_path) * file_name
     dst_file_path = complete_file_path(dst_path) * file_name
     for ext in file_exts
-        if ~isfile(dst_file_path * ext)
+        if !isfile(dst_file_path * ext)
             cp(src_file_path * ext, dst_file_path * ext, force=false)
         end
     end
