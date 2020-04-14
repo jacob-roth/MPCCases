@@ -131,7 +131,7 @@ function load_case(case_name, case_path, lineOff=Line(); other::Bool=true)
   for i in lines_on
     @assert branch_arr[i,11] == 1  #should be on since we discarded all other
     lit += 1
-    lines[lit] = Line(branch_arr[i, 1:13]...)
+    lines[lit] = Line(lit, branch_arr[i, 1:13]...)
     if lines[lit].angmin>-360 || lines[lit].angmax<360
       error("Bounds of voltage angles are still to be implemented.")
     end
