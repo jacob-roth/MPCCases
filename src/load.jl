@@ -114,7 +114,7 @@ function load_case(case_name, case_path, lineOff=Line(); other::Bool=true)
   #
   branch_arr = readdlm(case_name * ".branch")
   num_lines = size(branch_arr,1)
-  lines_on = findall((branch_arr[:,11].>0) .& ((branch_arr[:,1].!=lineOff.from) .| (branch_arr[:,2].!=lineOff.to)))
+  lines_on = findall((branch_arr[:,12].>0) .& ((branch_arr[:,2].!=lineOff.from) .| (branch_arr[:,2].!=lineOff.to)))
   num_on   = length(lines_on)
 
   if lineOff.from>0 && lineOff.to>0
@@ -122,16 +122,16 @@ function load_case(case_name, case_path, lineOff=Line(); other::Bool=true)
     #println(lines_on, branch_arr[:,1].!=lineOff.from, branch_arr[:,2].!=lineOff.to)
   end
   if length(findall(branch_arr[:,11].==0))>0
-    println("opf_loaddata: ", num_lines-length(findall(branch_arr[:,11].>0)), " lines are off and will be discarded (out of ", num_lines, ")")
+    println("opf_loaddata: ", num_lines-length(findall(branch_arr[:,12].>0)), " lines are off and will be discarded (out of ", num_lines, ")")
   end
 
   lines = Array{Line,1}(undef, num_on)
 
   lit=0
   for i in lines_on
-    @assert branch_arr[i,11] == 1  #should be on since we discarded all other
+    @assert branch_arr[i,12] == 1  #should be on since we discarded all other
     lit += 1
-    lines[lit] = Line(branch_arr[i, 1:13]...)
+    lines[lit] = Line(branch_arr[i, 1:14]...)
     if lines[lit].angmin>-360 || lines[lit].angmax<360
       error("Bounds of voltage angles are still to be implemented.")
     end
