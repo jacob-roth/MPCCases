@@ -15,21 +15,22 @@ struct Bus
 end
 
 struct Line
-  from::Int
-  to::Int
-  r::Float64
-  x::Float64
-  b::Float64
-  rateA::Float64
-  rateB::Float64
-  rateC::Float64
-  ratio::Float64 #TAP
-  angle::Float64 #SHIFT
-  status::Int
-  angmin::Float64
-  angmax::Float64
+    id::Int
+    from::Int
+    to::Int
+    r::Float64
+    x::Float64
+    b::Float64
+    rateA::Float64
+    rateB::Float64
+    rateC::Float64
+    ratio::Float64 #TAP
+    angle::Float64 #SHIFT
+    status::Int
+    angmin::Float64
+    angmax::Float64
 end
-Line() = Line(0,0,0.,0.,0.,0.,0.,0.,0.,0.,0,0.,0.)
+Line() = Line(0,0,0,0.,0.,0.,0.,0.,0.,0.,0.,0,0.,0.)
 
 mutable struct Gener
   # .gen fields
@@ -113,7 +114,7 @@ function load_case(case_name, case_path, lineOff=Line(); other::Bool=true)
   #
   branch_arr = readdlm(case_name * ".branch")
   num_lines = size(branch_arr,1)
-  lines_on = findall((branch_arr[:,11].>0) .& ((branch_arr[:,1].!=lineOff.from) .| (branch_arr[:,2].!=lineOff.to)) )
+  lines_on = findall((branch_arr[:,11].>0) .& ((branch_arr[:,1].!=lineOff.from) .| (branch_arr[:,2].!=lineOff.to)))
   num_on   = length(lines_on)
 
   if lineOff.from>0 && lineOff.to>0
