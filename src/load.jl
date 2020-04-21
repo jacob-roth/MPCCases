@@ -466,7 +466,7 @@ function adj_params(read_file_path::String, file_name::String, file_ext::String,
     vals = generate_vals(arr, start_x_idx, end_x_idx, y_idx, prod_fac, add_fac)
     perturbed_vals = isnothing(mean) | isnothing(sd) ? vals : add_gaussian_noise(vals, mean, sd, seed)
     adj_arr = adj_vals_in_arr(arr, start_x_idx, y_idx, perturbed_vals)
-    filled_write_file_path = fill_write_file_path(write_file_path, read_file_path, overwrite_file)
+    filled_write_file_path = fill_write_file_path(write_file_path, read_file_path, overwrite_file, "adj/")
     open(filled_write_file_path * file_name * file_ext, "w") do io
         writedlm(io, arr)
     end
@@ -479,7 +479,7 @@ function adj_params(read_file_path::String, file_name::String, file_ext::String,
     vals = isempty(vals) ? arr[start_x_idx:end, y_idx] : reshape_vals(vals, P, Q)
     perturbed_vals = isnothing(mean) | isnothing(sd) ? vals : add_gaussian_noise(vals, mean, sd, seed)
     adj_arr = adj_vals_in_arr(arr, start_x_idx, y_idx, perturbed_vals)
-    filled_write_file_path = fill_write_file_path(write_file_path, read_file_path, overwrite_file)
+    filled_write_file_path = fill_write_file_path(write_file_path, read_file_path, overwrite_file, "adj/")
     open(filled_write_file_path * file_name * file_ext, "w") do io
         writedlm(io, arr)
     end
@@ -493,7 +493,7 @@ function adj_params(read_file_path::String, file_name::String, file_ext::String,
     vals = generate_vals(arr, start_x_idx, end_x_idx, y_idx, prod_fac, add_fac)
     perturbed_vals = isnothing(mean) | isnothing(sd) ? vals : add_gaussian_noise(vals, mean, sd, seed)
     adj_arr = adj_vals_in_arr(arr, start_x_idx, y_idx, perturbed_vals)
-    filled_write_file_path = fill_write_file_path(write_file_path, read_file_path, overwrite_file)
+    filled_write_file_path = fill_write_file_path(write_file_path, read_file_path, overwrite_file, "adj/")
     open(filled_write_file_path * file_name * file_ext, "w") do io
         writedlm(io, arr)
     end
@@ -506,7 +506,7 @@ function adj_params(read_file_path::String, file_name::String, file_ext::String,
     vals = isempty(vals) ? arr[start_x_idx:end, y_idx] : reshape_vals(vals, c2, c1, c0)
     perturbed_vals = isnothing(mean) | isnothing(sd) ? vals : add_gaussian_noise(vals, mean, sd, seed)
     adj_arr = adj_vals_in_arr(arr, start_x_idx, y_idx, perturbed_vals)
-    filled_write_file_path = fill_write_file_path(write_file_path, read_file_path, overwrite_file)
+    filled_write_file_path = fill_write_file_path(write_file_path, read_file_path, overwrite_file, "adj/")
     open(filled_write_file_path * file_name * file_ext, "w") do io
         writedlm(io, arr)
     end
@@ -579,11 +579,11 @@ function complete_file_path(file_path::String)
     return !(file_path[end] ∈ Set(['/',"/"])) ? file_path * "/" : file_path
 end
 
-function fill_write_file_path(curr_write_file_path::String, read_file_path::String, overwrite_file::Bool)
+function fill_write_file_path(curr_write_file_path::String, read_file_path::String, overwrite_file::Bool, suffix::String)
     filled_write_file_path = complete_file_path(mkpath(
         overwrite_file                  ?   read_file_path  :
         !isempty(curr_write_file_path)  ?   curr_write_file_path :
-                                            read_file_path * "adj/"))
+                                            read_file_path * suffix))
     return filled_write_file_path
 end
 
@@ -667,4 +667,35 @@ function cp_remaining_files(src_path::String, dst_path::String, file_name::Strin
             cp(src_file_path * ext, dst_file_path * ext, force=false)
         end
     end
+end
+
+
+function write_agg_branch_file(read_file_path::String, file_name::String, write_file_path::String="", overwrite_file::Bool=false)
+    existing_branch_arr = readdlm(complete_file_path(read_file_path) * file_name * ".branch")
+    mean_rateA_arr = get_mean_rateA_arr(read_file_path)
+    existing_branch_arr[:, 6] = mean_rateA_arr
+    filled_write_file_path = fill_write_file_path(write_file_path, read_file_path, overwrite_file, "agg/")
+    open(filled_write_file_path * file_name * ".branch", "w") do io
+        writedlm(io, existing_branch_arr)
+    end
+end
+
+function get_mean_rateA_arr(read_file_path::String)
+    directory_path = complete_file_path(read_file_path)
+    branch_files = filter(x -> endswith(x, ".branch"), readdir(directory_path))
+    nbranches = get_num_branches(directory_path * branch_files[1])
+    nfiles = length(branch_files)
+    rateA_arr = Array{Float64}(undef, nbranches, nfiles)
+    for file_idx in 1:nfiles
+        file_path = directory_path * branch_files[file_idx]
+        branch_arr = readdlm(file_path)
+        rateA_arr[:, file_idx] = branch_arr[:, 6]
+    end
+    mean_rateA_arr = mean(rateA_arr, dims=2)
+    return mean_rateA_arr
+end
+
+function get_num_branches(branch_file_path::String)
+    branch_arr = readdlm(branch_file_path)
+    return size(branch_arr, 1)
 end
