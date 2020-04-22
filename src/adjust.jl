@@ -192,7 +192,7 @@ function add_gaussian_noise(vals::Array, mean::Union{Int, Float64}, sd::Union{In
     rng = isnothing(seed) ? MersenneTwister() : MersenneTwister(seed)
     dims = size(vals)
     gaussian_noise = randn(rng, dims)
-    scaled_gaussian_noise = (sd .* noise) .+ mean
+    scaled_gaussian_noise = (sd .* gaussian_noise) .+ mean
     return vals + scaled_gaussian_noise
 end
 
