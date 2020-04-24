@@ -14,6 +14,6 @@ export OPFData
 export CaseData
 
 include("adjust.jl")
-export adj_params, complete_file_path, adj_params_and_write, cp_remaining_files
+export adj_params, complete_file_path, adj_multi_params, cp_remaining_files
 
 end # module
