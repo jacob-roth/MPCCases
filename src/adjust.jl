@@ -204,7 +204,7 @@ end
 
 # Adjusting Parameters for Multiple Cases
 
-function adj_multi_params(adj_case_path::Union{String, NTuple{N, String}}, adj_case_name::Union{String, NTuple{N, String}}, adj_case_ext::Union{String, Tuple{String, Vararg{String}}}, P::Bool, Q::Bool, prod_fac::Union{Real, NTuple{N, Real}}, add_fac::Union{Real, NTuple{N, Real}}; start_x_idx::Int=1, end_x_idx::Int=0, T::Type=Float64, mean::Union{Nothing, Real, NTuple{N, Real}}=nothing, sd::Union{Nothing, Real, NTuple{N, Real}}=nothing, overwrite_file::Bool=false, write_file_path::String="", seed::Union{Nothing, Int}=nothing) where {N}
+function adj_multi_params(adj_case_path::Union{String, NTuple{N, String}}, adj_case_name::Union{String, NTuple{N, String}}, adj_case_ext::Union{String, Tuple{String, Vararg{String}}}, P::Bool, Q::Bool, prod_fac::Union{Real, NTuple{N, Real}}, add_fac::Union{Real, NTuple{N, Real}}; start_x_idx::Int=1, end_x_idx::Int=0, T::Type=Float64, mean::Union{Nothing, Real, NTuple{N, Real}}=nothing, sd::Union{Nothing, Real, NTuple{N, Real}}=nothing, overwrite_file::Bool=false, write_file_path::Union{String, NTuple{N, String}}="", seed::Union{Nothing, Int}=nothing) where {N}
     adj_case_path = isa(adj_case_path, Union{String, Tuple{String}}) ? match_length(convert(String, adj_case_path), N) : adj_case_path
     adj_case_name = isa(adj_case_name, Union{String, Tuple{String}}) ? match_length(convert(String, adj_case_name), N) : adj_case_name
     adj_case_ext = isa(adj_case_ext, Union{String, Tuple{String}}) ? match_length(convert(String, adj_case_ext), N) : adj_case_ext
@@ -225,7 +225,7 @@ function adj_multi_params(adj_case_path::Union{String, NTuple{N, String}}, adj_c
     end
 end
 
-function adj_multi_params(adj_case_path::Union{String, NTuple{N, String}}, adj_case_name::Union{String, NTuple{N, String}}, adj_case_ext::Union{String, Tuple{String, Vararg{String}}}, P::Bool, Q::Bool, vals::Union{VecOrMat{Real}, NTuple{N, VecOrMat{Real}}}; start_x_idx::Int=1, end_x_idx::Int=0, T::Type=Float64, mean::Union{Nothing, Real, NTuple{N, Real}}=nothing, sd::Union{Nothing, Real, NTuple{N, Real}}=nothing, overwrite_file::Bool=false, write_file_path::String="", seed::Union{Nothing, Int}=nothing) where {N}
+function adj_multi_params(adj_case_path::Union{String, NTuple{N, String}}, adj_case_name::Union{String, NTuple{N, String}}, adj_case_ext::Union{String, Tuple{String, Vararg{String}}}, P::Bool, Q::Bool, vals::Union{VecOrMat{Real}, NTuple{N, VecOrMat{Real}}}; start_x_idx::Int=1, end_x_idx::Int=0, T::Type=Float64, mean::Union{Nothing, Real, NTuple{N, Real}}=nothing, sd::Union{Nothing, Real, NTuple{N, Real}}=nothing, overwrite_file::Bool=false, write_file_path::Union{String, NTuple{N, String}}="", seed::Union{Nothing, Int}=nothing) where {N}
     adj_case_path = isa(adj_case_path, Union{String, Tuple{String}}) ? match_length(convert(String, adj_case_path), N) : adj_case_path
     adj_case_name = isa(adj_case_name, Union{String, Tuple{String}}) ? match_length(convert(String, adj_case_name), N) : adj_case_name
     adj_case_ext = isa(adj_case_ext, Union{String, Tuple{String}}) ? match_length(convert(String, adj_case_ext), N) : adj_case_ext
@@ -245,7 +245,7 @@ function adj_multi_params(adj_case_path::Union{String, NTuple{N, String}}, adj_c
     end
 end
 
-function adj_multi_params(adj_case_path::Union{String, NTuple{N, String}}, adj_case_name::Union{String, NTuple{N, String}}, adj_case_ext::Union{String, Tuple{String, Vararg{String}}}, c2::Bool, c1::Bool, c0::Bool, prod_fac::Union{Real, NTuple{N, Real}}, add_fac::Union{Real, NTuple{N, Real}}; start_x_idx::Int=1, end_x_idx::Int=0, T::Type=Float64, mean::Union{Nothing, Real, NTuple{N, Real}}=nothing, sd::Union{Nothing, Real, NTuple{N, Real}}=nothing, overwrite_file::Bool=false, write_file_path::String="", seed::Union{Nothing, Int}=nothing) where {N}
+function adj_multi_params(adj_case_path::Union{String, NTuple{N, String}}, adj_case_name::Union{String, NTuple{N, String}}, adj_case_ext::Union{String, Tuple{String, Vararg{String}}}, c2::Bool, c1::Bool, c0::Bool, prod_fac::Union{Real, NTuple{N, Real}}, add_fac::Union{Real, NTuple{N, Real}}; start_x_idx::Int=1, end_x_idx::Int=0, T::Type=Float64, mean::Union{Nothing, Real, NTuple{N, Real}}=nothing, sd::Union{Nothing, Real, NTuple{N, Real}}=nothing, overwrite_file::Bool=false, write_file_path::Union{String, NTuple{N, String}}="", seed::Union{Nothing, Int}=nothing) where {N}
     adj_case_path = isa(adj_case_path, Union{String, Tuple{String}}) ? match_length(convert(String, adj_case_path), N) : adj_case_path
     adj_case_name = isa(adj_case_name, Union{String, Tuple{String}}) ? match_length(convert(String, adj_case_name), N) : adj_case_name
     adj_case_ext = isa(adj_case_ext, Union{String, Tuple{String}}) ? match_length(convert(String, adj_case_ext), N) : adj_case_ext
@@ -266,7 +266,7 @@ function adj_multi_params(adj_case_path::Union{String, NTuple{N, String}}, adj_c
     end
 end
 
-function adj_multi_params(adj_case_path::Union{String, NTuple{N, String}}, adj_case_name::Union{String, NTuple{N, String}}, adj_case_ext::Union{String, Tuple{String, Vararg{String}}}, c2::Bool, c1::Bool, c0::Bool, vals::Union{VecOrMat{Real}, NTuple{N, VecOrMat{Real}}}; start_x_idx::Int=1, end_x_idx::Int=0, T::Type=Float64, mean::Union{Nothing, Real, NTuple{N, Real}}=nothing, sd::Union{Nothing, Real, NTuple{N, Real}}=nothing, overwrite_file::Bool=false, write_file_path::String="", seed::Union{Nothing, Int}=nothing) where {N}
+function adj_multi_params(adj_case_path::Union{String, NTuple{N, String}}, adj_case_name::Union{String, NTuple{N, String}}, adj_case_ext::Union{String, Tuple{String, Vararg{String}}}, c2::Bool, c1::Bool, c0::Bool, vals::Union{VecOrMat{Real}, NTuple{N, VecOrMat{Real}}}; start_x_idx::Int=1, end_x_idx::Int=0, T::Type=Float64, mean::Union{Nothing, Real, NTuple{N, Real}}=nothing, sd::Union{Nothing, Real, NTuple{N, Real}}=nothing, overwrite_file::Bool=false, write_file_path::Union{String, NTuple{N, String}}="", seed::Union{Nothing, Int}=nothing) where {N}
     adj_case_path = isa(adj_case_path, Union{String, Tuple{String}}) ? match_length(convert(String, adj_case_path), N) : adj_case_path
     adj_case_name = isa(adj_case_name, Union{String, Tuple{String}}) ? match_length(convert(String, adj_case_name), N) : adj_case_name
     adj_case_ext = isa(adj_case_ext, Union{String, Tuple{String}}) ? match_length(convert(String, adj_case_ext), N) : adj_case_ext
@@ -286,7 +286,7 @@ function adj_multi_params(adj_case_path::Union{String, NTuple{N, String}}, adj_c
     end
 end
 
-function adj_multi_params(adj_case_path::Union{String, NTuple{N, String}}, adj_case_name::Union{String, NTuple{N, String}}, adj_case_ext::NTuple{N, String}, P::Union{Bool, Tuple{Bool, Vararg{Bool}}}, Q::Union{Bool, Tuple{Bool, Vararg{Bool}}}, c2::Bool, c1::Bool, c0::Bool, prod_fac::Union{Real, NTuple{N, Real}}, add_fac::Union{Real, NTuple{N, Real}}; start_x_idx::Int=1, end_x_idx::Int=0, T::Type=Float64, mean::Union{Nothing, Real, NTuple{N, Real}}=nothing, sd::Union{Nothing, Real, NTuple{N, Real}}=nothing, overwrite_file::Bool=false, write_file_path::String="", seed::Union{Nothing, Int}=nothing) where {N}
+function adj_multi_params(adj_case_path::Union{String, NTuple{N, String}}, adj_case_name::Union{String, NTuple{N, String}}, adj_case_ext::NTuple{N, String}, P::Union{Bool, Tuple{Bool, Vararg{Bool}}}, Q::Union{Bool, Tuple{Bool, Vararg{Bool}}}, c2::Bool, c1::Bool, c0::Bool, prod_fac::Union{Real, NTuple{N, Real}}, add_fac::Union{Real, NTuple{N, Real}}; start_x_idx::Int=1, end_x_idx::Int=0, T::Type=Float64, mean::Union{Nothing, Real, NTuple{N, Real}}=nothing, sd::Union{Nothing, Real, NTuple{N, Real}}=nothing, overwrite_file::Bool=false, write_file_path::Union{String, NTuple{N, String}}="", seed::Union{Nothing, Int}=nothing) where {N}
     adj_case_path = isa(adj_case_path, Union{String, Tuple{String}}) ? match_length(convert(String, adj_case_path), N) : adj_case_path
     adj_case_name = isa(adj_case_name, Union{String, Tuple{String}}) ? match_length(convert(String, adj_case_name), N) : adj_case_name
     write_file_path = (!overwrite_file & isa(write_file_path, Union{String, Tuple{String}})) ? match_length(convert(String, write_file_path), N) : write_file_path
@@ -306,7 +306,7 @@ function adj_multi_params(adj_case_path::Union{String, NTuple{N, String}}, adj_c
     end
 end
 
-function adj_multi_params(adj_case_path::Union{String, NTuple{N, String}}, adj_case_name::Union{String, NTuple{N, String}}, adj_case_ext::NTuple{N, String}, P::Union{Bool, Tuple{Bool, Vararg{Bool}}}, Q::Union{Bool, Tuple{Bool, Vararg{Bool}}}, c2::Bool, c1::Bool, c0::Bool, vals::Union{VecOrMat{Real}, NTuple{N, VecOrMat{Real}}}; start_x_idx::Int=1, end_x_idx::Int=0, T::Type=Float64, mean::Union{Nothing, Real, NTuple{N, Real}}=nothing, sd::Union{Nothing, Real, NTuple{N, Real}}=nothing, overwrite_file::Bool=false, write_file_path::String="", seed::Union{Nothing, Int}=nothing) where {N}
+function adj_multi_params(adj_case_path::Union{String, NTuple{N, String}}, adj_case_name::Union{String, NTuple{N, String}}, adj_case_ext::NTuple{N, String}, P::Union{Bool, Tuple{Bool, Vararg{Bool}}}, Q::Union{Bool, Tuple{Bool, Vararg{Bool}}}, c2::Bool, c1::Bool, c0::Bool, vals::Union{VecOrMat{Real}, NTuple{N, VecOrMat{Real}}}; start_x_idx::Int=1, end_x_idx::Int=0, T::Type=Float64, mean::Union{Nothing, Real, NTuple{N, Real}}=nothing, sd::Union{Nothing, Real, NTuple{N, Real}}=nothing, overwrite_file::Bool=false, write_file_path::Union{String, NTuple{N, String}}="", seed::Union{Nothing, Int}=nothing) where {N}
     adj_case_path = isa(adj_case_path, Union{String, Tuple{String}}) ? match_length(convert(String, adj_case_path), N) : adj_case_path
     adj_case_name = isa(adj_case_name, Union{String, Tuple{String}}) ? match_length(convert(String, adj_case_name), N) : adj_case_name
     write_file_path = (!overwrite_file & isa(write_file_path, Union{String, NTuple{1, String}})) ? match_length(convert(String, write_file_path), N) : write_file_path
