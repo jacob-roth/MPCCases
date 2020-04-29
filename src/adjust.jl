@@ -119,18 +119,6 @@ end
 
 # Helper Functions for Adjusting Parameters
 
-function complete_file_path(file_path::String)
-    return !(file_path[end] ∈ Set(['/',"/"])) ? file_path * "/" : file_path
-end
-
-function fill_write_file_path(curr_write_file_path::String, read_file_path::String, overwrite_file::Bool, suffix::String)
-    filled_write_file_path = complete_file_path(mkpath(
-        overwrite_file                  ?   read_file_path  :
-        !isempty(curr_write_file_path)  ?   curr_write_file_path :
-                                            read_file_path * suffix))
-    return filled_write_file_path
-end
-
 function get_y_idx(file_ext::String, P::Bool, Q::Bool)
     if file_ext == ".bus"
         return P & Q ? (3:4) : P ? (3:3) : (4:4)
@@ -322,31 +310,5 @@ function adj_multi_params(adj_case_path::Union{String, NTuple{N, String}}, adj_c
 
     for idx in 1:N
         adj_params(adj_case_path[idx], adj_case_name[idx], adj_case_ext[idx], P, Q, c2, c1, c0, vals[idx], start_x_idx=start_x_idx, end_x_idx=end_x_idx, T=T, mean=mean[idx], sd=sd[idx], overwrite_file=overwrite_file, write_file_path=write_file_path[idx], seed=sub_seeds[idx])
-    end
-end
-
-function match_length(target::Union{Nothing, String, Real, Array{Real}}, N::Int)
-    return isa(target, Union{Nothing, String, Real}) ? Tuple(repeat([target], N)) : fill(target, N)
-end
-
-# Helper Function for Adjusting Parameters and Writing Back to Disk
-
-function cp_remaining_files(src_path::String, dst_path::String, file_name::String)
-    file_exts = [".bus", ".gen", ".gencost", ".branch", ".phys"]
-    src_file_path = complete_file_path(src_path) * file_name
-    dst_file_path = complete_file_path(dst_path) * file_name
-    for ext in file_exts
-        if !isfile(dst_file_path * ext)
-            cp(src_file_path * ext, dst_file_path * ext, force=false)
-        end
-    end
-end
-
-function cp_remaining_files(src_path::Union{String, NTuple{N, String}}, dst_path::Union{String, NTuple{N, String}}, file_name::Union{String, NTuple{N, String}}) where {N}
-    src_path = isa(src_path, Union{String, Tuple{String}}) ? match_length(convert(String, src_path), N) : src_path
-    dst_path = isa(src_path, Union{String, Tuple{String}}) ? match_length(convert(String, dst_path), N) : dst_path
-    file_name = isa(file_name, Union{String, Tuple{String}}) ? match_length(convert(String, file_name), N) : file_name
-    for idx in 1:N
-        cp_remaining_files(src_path[idx], dst_path[idx], file_name[idx])
     end
 end
