@@ -14,6 +14,12 @@ export OPFData
 export CaseData
 
 include("adjust.jl")
-export adj_params, complete_file_path, adj_multi_params, cp_remaining_files
+export adj_params, adj_multi_params
+
+include("map_id.jl")
+export apply_mapping_to_file
+
+include("util.jl")
+export complete_file_path, fill_write_file_path, match_length, cp_remaining_files
 
 end # module
