@@ -12,7 +12,14 @@ export mapGenersToBuses
 export computeAdmitances, computeAdmittances, computeAdmittanceMatrix
 export OPFData
 export CaseData
-export adj_params, complete_file_path, get_y_idx, generate_vals, reshape_vals, adj_vals_in_arr, cp_remaining_files
-export adj_multi_params
+
+include("adjust.jl")
+export adj_params, adj_multi_params
+
+include("map_id.jl")
+export apply_mapping_to_file
+
+include("util.jl")
+export complete_file_path, fill_write_file_path, match_length, cp_remaining_files
 
 end # module
