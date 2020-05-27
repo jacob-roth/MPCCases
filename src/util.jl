@@ -33,3 +33,15 @@ function cp_remaining_files(src_path::Union{String, NTuple{N, String}}, dst_path
         cp_remaining_files(src_path[idx], dst_path[idx], file_name[idx])
     end
 end
+
+function get_phys(buses::AbstractArray; Dv::T, Mg::T, Dl::T, Dg::T) where T <: AbstractFloat
+    phys = MPCCases.Phys[]
+    for i in eachindex(buses)
+        if buses.bustype[i] == 1
+            push!(phys, MPCCases.Phys(buses.bus_i[i], 0.0, Dl, Dv))
+        elseif buses.bustype[i] == 2 || buses.bustype[i] == 3
+            push!(phys, MPCCases.Phys(buses.bus_i[i], Mg, Dg, 0.0))
+        end
+    end
+    return phys
+end

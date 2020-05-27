@@ -20,6 +20,6 @@ include("map_id.jl")
 export apply_mapping_to_file
 
 include("util.jl")
-export complete_file_path, fill_write_file_path, match_length, cp_remaining_files
+export complete_file_path, fill_write_file_path, match_length, cp_remaining_files, get_phys
 
 end # module
