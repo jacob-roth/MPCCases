@@ -236,7 +236,7 @@ function computeAdmitances(lines, buses, baseMVA;
       (2) `remove_tap` removes line ratio and line angle tap adjustments
       (3) `loss_scale` scales the real components of the admittance matrix by `loss_scale` amount
   """
-  nlines = length(lines)
+  nlines = sum([l.status for l in lines])
   YffR=Array{Float64}(undef, nlines)
   YffI=Array{Float64}(undef, nlines)
   YttR=Array{Float64}(undef, nlines)
@@ -246,7 +246,14 @@ function computeAdmitances(lines, buses, baseMVA;
   YtfR=Array{Float64}(undef, nlines)
   YtfI=Array{Float64}(undef, nlines)
 
-  for i in 1:nlines
+  activelines = []
+  for l in lines
+    if l.status == 1
+      push!(activelines, l)
+    end
+  end
+  lines = activelines
+  for i in eachindex(lines)
     @assert lines[i].status == 1
     Ys = 1/((lossless ? 0.0 : loss_scale * lines[i].r) + lines[i].x*im)
     #assign nonzero tap ratio
@@ -337,6 +344,14 @@ function computeAdmittanceMatrix(lines, buses, baseMVA, busDict;
   YffR, YffI, YttR, YttI, YftR, YftI, YtfR, YtfI, YshR, YshI = computeAdmitances(lines, buses, baseMVA;
                                                                lossless=lossless, remove_Bshunt=remove_Bshunt, remove_tap=remove_tap,
                                                                verb=verb, loss_scale=loss_scale)
+  nlines = sum([l.status for l in lines])
+  activelines = []
+  for l in lines
+   if l.status == 1
+     push!(activelines, l)
+   end
+  end
+  lines = activelines
   nbuses = length(buses)
   nlines = length(lines)
 
@@ -416,6 +431,9 @@ function mapLinesToBuses(buses, lines, busDict)
   FromLines = [Int[] for b in 1:nbus]
   ToLines   = [Int[] for b in 1:nbus]
   for i in 1:length(lines)
+    if lines[i].status != 1
+      continue
+    end
     busID = busDict[lines[i].from]
     @assert 1<= busID <= nbus
     push!(FromLines[busID], i)
