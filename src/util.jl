@@ -45,3 +45,25 @@ function get_phys(buses::AbstractArray; Dv::T, Mg::T, Dl::T, Dg::T) where T <: A
     end
     return phys
 end
+
+function get_Bs_psd_adjustments(opfdata::OPFData, options::Dict, verb::Bool=false)
+    """
+    make `B` matrix diagonally dominant
+    """
+    buses = opfdata.buses
+    Bs_adj = zeros(length(buses))
+    Y = computeAdmittanceMatrix(opfdata, options)
+    B = -imag.(Y)
+    for i in 1:size(B,1)
+        r = B[i,:]
+        rdiag = r[i]
+        roffd = sum(r[[(j .!= i) for j in 1:size(B,1)]])
+        if abs(roffd) > rdiag
+            adj = -(abs(roffd + rdiag) + 1e-7)
+            adj_MVA = adj * opfdata.baseMVA
+            Bs_adj[i] = adj_MVA
+            if verb; println("adjusting for row $i: ", adj_MVA); end
+        end
+    end
+    return Bs_adj
+end
