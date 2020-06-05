@@ -1,6 +1,7 @@
 # Adjusting Parameters
 
-function adj_params(read_file_path::String, file_name::String, file_ext::String, P::Bool, Q::Bool, prod_fac::Real=1, add_fac::Real=0; 
+# 1: Single file_ext, multi column, uniform scaling update for .bus and .gen (P,Q)
+function adj_params(read_file_path::String, file_name::String, file_ext::String, P::Bool, Q::Bool, prod_fac::Real, add_fac::Real; 
                     start_x_idx::Int=1, end_x_idx::Int=0, T::Type=Float64, mean::Union{Nothing, Real}=nothing, sd::Union{Nothing, Real}=nothing, 
                     overwrite_file::Bool=false, write_file_path::String="", seed::Union{Nothing, Int}=nothing)
     read_file_path = complete_file_path(read_file_path)
@@ -16,7 +17,8 @@ function adj_params(read_file_path::String, file_name::String, file_ext::String,
     end
 end
 
-function adj_params(read_file_path::String, file_name::String, file_ext::String,  P::Bool, Q::Bool, vals::VecOrMat{<:Real}=zeros(Int,0); 
+# 2: Single file_ext, multi column, block value update for .bus and .gen (P,Q)
+function adj_params(read_file_path::String, file_name::String, file_ext::String,  P::Bool, Q::Bool, vals::VecOrMat{<:Real}; 
                     start_x_idx::Int=1,  T::Type=Float64, mean::Union{Nothing, Real}=nothing, sd::Union{Nothing, Real}=nothing, 
                     overwrite_file::Bool=false, write_file_path::String="", seed::Union{Nothing, Int}=nothing)
     read_file_path = complete_file_path(read_file_path)
@@ -31,7 +33,8 @@ function adj_params(read_file_path::String, file_name::String, file_ext::String,
     end
 end
 
-function adj_params(read_file_path::String, file_name::String, file_ext::String, c2::Bool, c1::Bool, c0::Bool, prod_fac::Real=1, add_fac::Real=0; 
+# 3: Single file_ext, multi column, uniform scaling update for .gencost (c2,c1,c0)
+function adj_params(read_file_path::String, file_name::String, file_ext::String, c2::Bool, c1::Bool, c0::Bool, prod_fac::Real, add_fac::Real; 
                     start_x_idx::Int=1, end_x_idx::Int=0, T::Type=Float64, mean::Union{Nothing, Real}=nothing, sd::Union{Nothing, Real}=nothing, 
                     overwrite_file::Bool=false, write_file_path::String="", seed::Union{Nothing, Int}=nothing)
     read_file_path = complete_file_path(read_file_path)
@@ -47,7 +50,8 @@ function adj_params(read_file_path::String, file_name::String, file_ext::String,
     end
 end
 
-function adj_params(read_file_path::String, file_name::String, file_ext::String, c2::Bool, c1::Bool, c0::Bool, vals::VecOrMat{<:Real}=zeros(Int,0); 
+# 4: Single file_ext, multi column, block value update for .gencost (c2,c1,c0)
+function adj_params(read_file_path::String, file_name::String, file_ext::String, c2::Bool, c1::Bool, c0::Bool, vals::VecOrMat{<:Real}; 
                     start_x_idx::Int=1, T::Type=Float64, mean::Union{Nothing, Real}=nothing, sd::Union{Nothing, Real}=nothing, 
                     overwrite_file::Bool=false, write_file_path::String="", seed::Union{Nothing, Int}=nothing)
     read_file_path = complete_file_path(read_file_path)
@@ -62,7 +66,8 @@ function adj_params(read_file_path::String, file_name::String, file_ext::String,
     end
 end
 
-function adj_params(read_file_path::String, file_name::String, file_ext::String, rateA::Bool, prod_fac::Real=1, add_fac::Real=0; 
+# 5: Single file_ext, multi column, uniform scaling update for .branch (rateA)
+function adj_params(read_file_path::String, file_name::String, file_ext::String, rateA::Bool, prod_fac::Real, add_fac::Real; 
                     start_x_idx::Int=1, end_x_idx::Int=0, T::Type=Float64, mean::Union{Nothing, Real}=nothing, sd::Union{Nothing, Real}=nothing, 
                     overwrite_file::Bool=false, write_file_path::String="", seed::Union{Nothing, Int}=nothing)
     read_file_path = complete_file_path(read_file_path)
@@ -78,7 +83,8 @@ function adj_params(read_file_path::String, file_name::String, file_ext::String,
     end
 end
 
-function adj_params(read_file_path::String, file_name::String, file_ext::String, rateA::Bool, vals::VecOrMat{<:Real}=zeros(Int,0);
+# 6: Single file_ext, multi column, block value update for .branch (rateA)
+function adj_params(read_file_path::String, file_name::String, file_ext::String, rateA::Bool, vals::VecOrMat{<:Real};
                     start_x_idx::Int=1,  T::Type=Float64, mean::Union{Nothing, Real}=nothing, sd::Union{Nothing, Real}=nothing, 
                     overwrite_file::Bool=false, write_file_path::String="", seed::Union{Nothing, Int}=nothing)
     read_file_path = complete_file_path(read_file_path)
@@ -93,9 +99,10 @@ function adj_params(read_file_path::String, file_name::String, file_ext::String,
     end
 end
 
+# 7: Multi file_ext, multi column, varied scaling update
 function adj_params(read_file_path::String, file_name::String, file_ext::Union{String, Tuple{String, Vararg{String}}}, 
                     P::Union{Bool, Tuple{Bool, Vararg{Bool}}}, Q::Union{Bool, Tuple{Bool, Vararg{Bool}}}, c2::Bool, c1::Bool, c0::Bool, rateA::Bool, 
-                    prod_fac::Union{Real, Tuple{Real, Vararg{Real}}}=1, add_fac::Union{Real, Tuple{Real, Vararg{Real}}}=0; 
+                    prod_fac::Union{Real, Tuple{Real, Vararg{Real}}}, add_fac::Union{Real, Tuple{Real, Vararg{Real}}}; 
                     start_x_idx::Int=1, end_x_idx::Int=0, T::Type=Float64, mean::Union{Nothing, Real, Tuple{Real, Vararg{Real}}}=nothing, sd::Union{Nothing, Real, Tuple{Real, Vararg{Real}}}=nothing, 
                     overwrite_file::Bool=false, write_file_path::String="", seed::Union{Nothing, Int}=nothing)
     if isa(file_ext, Tuple{Vararg{String}})
@@ -149,6 +156,7 @@ function adj_params(read_file_path::String, file_name::String, file_ext::Union{S
     end
 end
 
+# 8: Multi file_ext, multi column, varied block value update
 function adj_params(read_file_path::String, file_name::String, file_ext::Union{String, Tuple{String, Vararg{String}}}, 
                     P::Union{Bool, Tuple{Bool, Vararg{Bool}}}, Q::Union{Bool, Tuple{Bool, Vararg{Bool}}}, c2::Bool, c1::Bool, c0::Bool, rateA::Bool,
                     vals::Union{VecOrMat{<:Real}, Tuple{VecOrMat{<:Real}, Vararg{VecOrMat{<:Real}}}}; 
