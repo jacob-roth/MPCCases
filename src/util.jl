@@ -6,8 +6,16 @@ function fill_write_file_path(curr_write_file_path::String, read_file_path::Stri
     filled_write_file_path = complete_file_path(mkpath(
         overwrite_file                  ?   read_file_path  :
         !isempty(curr_write_file_path)  ?   curr_write_file_path :
-                                            read_file_path * suffix))
+                                            read_file_path * suffix
+                                            ))
     return filled_write_file_path
+end
+
+function fill_write_file_name(file_name::String, write_file_name::String, overwrite_file::Bool)
+    filled_write_file_name =    overwrite_file              ?   file_name : 
+                                !isempty(write_file_name)   ?   write_file_name : 
+                                                                file_name
+    return filled_write_file_name
 end
 
 function match_length(target::Union{Nothing, String, Real, Array{Real}}, N::Int)
