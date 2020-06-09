@@ -16,6 +16,9 @@ export CaseData
 include("adjust.jl")
 export adj_params, adj_multi_params
 
+include("compose.jl")
+export compose_file
+
 include("map_id.jl")
 export apply_mapping_to_file
 
