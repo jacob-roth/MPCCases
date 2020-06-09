@@ -270,47 +270,6 @@ end
 
 # Helper Functions for Adjusting Parameters
 
-function get_y_idx(file_ext::String, P::Bool, Q::Bool)
-    if file_ext == ".bus"
-        return P & Q ? (3:4) : P ? (3:3) : (4:4)
-    elseif file_ext == ".gen"
-        return P & Q ? (2:3) : P ? (2:2) : (3:3)
-    else
-        throw(DomainError(file_ext, "file_ext is not properly defined for the number of boolean parameters given."))
-    end
-end
-
-function get_y_idx(file_ext::String, c2::Bool, c1::Bool, c0::Bool)
-    if file_ext == ".gencost"
-        return c2 & c1 & c0 ? (5:7) : c2 & c1 ? (5:6) : c2 & c0 ? (5:2:7) : c1 & c0 ? (6:7) : c2 ? (5:5) : c1 ? (6:6) : (7:7)
-    else
-        throw(DomainError(file_ext, "file_ext is not properly defined for the number of boolean parameters given."))
-    end
-end
-
-function get_y_idx(file_ext::String, rateA::Bool)
-    if (file_ext == ".branch") & rateA
-        return 6:6
-    else
-        throw(DomainError(file_ext, "file_ext is not properly defined for the number of boolean parameters given."))
-    end
-end
-
-function get_write_cols_idx(file_ext::String)
-    if file_ext ∈ (".bus", ".gen")
-        P, Q = (true, true)
-        return get_y_idx(file_ext, P, Q)
-    elseif file_ext == ".gencost"
-        c2, c1, c0 = (true, true, true)
-        return get_y_idx(file_ext, c2, c1, c0)
-    elseif file_ext == ".branch"
-        rateA = true
-        return get_y_idx(file_ext, rateA)
-    else
-        throw(DomainError(file_ext, "file_ext is not properly defined."))
-    end
-end
-
 function generate_vals(arr::VecOrMat{<:Real}, start_x_idx::Int, end_x_idx::Int, y_idx::OrdinalRange{<:Real}, prod_fac::Real, add_fac::Real)
     subset_arr = arr[start_x_idx:end_x_idx, y_idx]
     return (prod_fac .* subset_arr) .+ add_fac
