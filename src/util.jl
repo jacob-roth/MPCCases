@@ -2,6 +2,47 @@ function complete_file_path(file_path::String)
     return !(file_path[end] ∈ Set(['/',"/"])) ? file_path * "/" : file_path
 end
 
+function get_y_idx(file_ext::String, P::Bool, Q::Bool)
+    if file_ext == ".bus"
+        return P & Q ? (3:4) : P ? (3:3) : (4:4)
+    elseif file_ext == ".gen"
+        return P & Q ? (2:3) : P ? (2:2) : (3:3)
+    else
+        throw(DomainError(file_ext, "file_ext is not properly defined for the number of boolean parameters given."))
+    end
+end
+
+function get_y_idx(file_ext::String, c2::Bool, c1::Bool, c0::Bool)
+    if file_ext == ".gencost"
+        return c2 & c1 & c0 ? (5:7) : c2 & c1 ? (5:6) : c2 & c0 ? (5:2:7) : c1 & c0 ? (6:7) : c2 ? (5:5) : c1 ? (6:6) : (7:7)
+    else
+        throw(DomainError(file_ext, "file_ext is not properly defined for the number of boolean parameters given."))
+    end
+end
+
+function get_y_idx(file_ext::String, rateA::Bool)
+    if (file_ext == ".branch") & rateA
+        return 6:6
+    else
+        throw(DomainError(file_ext, "file_ext is not properly defined for the number of boolean parameters given."))
+    end
+end
+
+function get_write_cols_idx(file_ext::String)
+    if file_ext ∈ (".bus", ".gen")
+        P, Q = (true, true)
+        return get_y_idx(file_ext, P, Q)
+    elseif file_ext == ".gencost"
+        c2, c1, c0 = (true, true, true)
+        return get_y_idx(file_ext, c2, c1, c0)
+    elseif file_ext == ".branch"
+        rateA = true
+        return get_y_idx(file_ext, rateA)
+    else
+        throw(DomainError(file_ext, "file_ext is not properly defined."))
+    end
+end
+
 function fill_write_file_path(curr_write_file_path::String, read_file_path::String, overwrite_file::Bool, suffix::String)
     filled_write_file_path = complete_file_path(mkpath(
         overwrite_file                  ?   read_file_path  :
