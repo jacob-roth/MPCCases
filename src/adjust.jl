@@ -14,9 +14,10 @@ function adj_params(read_file_path::String, file_name::String, file_ext::String,
     adj_arr = adj_vals_in_arr(arr, start_x_idx, y_idx, perturbed_vals)
     filled_write_file_path = fill_write_file_path(write_file_path, read_file_path, overwrite_file, "adj/")
     filled_write_file_name = fill_write_file_name(file_name, write_file_name, overwrite_file)
+    write_cols_idx = get_write_cols_idx(file_ext)
     open(filled_write_file_path * filled_write_file_name * file_ext, "w") do io
         if only_write_changed_cols
-            writedlm(io, adj_arr[:, y_idx])
+            writedlm(io, adj_arr[:, write_cols_idx])
         else
             writedlm(io, adj_arr)
         end
@@ -36,9 +37,10 @@ function adj_params(read_file_path::String, file_name::String, file_ext::String,
     adj_arr = adj_vals_in_arr(arr, start_x_idx, y_idx, perturbed_vals)
     filled_write_file_path = fill_write_file_path(write_file_path, read_file_path, overwrite_file, "adj/")
     filled_write_file_name = fill_write_file_name(file_name, write_file_name, overwrite_file)
+    write_cols_idx = get_write_cols_idx(file_ext)
     open(filled_write_file_path * filled_write_file_name * file_ext, "w") do io
         if only_write_changed_cols
-            writedlm(io, adj_arr[:, y_idx])
+            writedlm(io, adj_arr[:, write_cols_idx])
         else
             writedlm(io, adj_arr)
         end
@@ -59,9 +61,10 @@ function adj_params(read_file_path::String, file_name::String, file_ext::String,
     adj_arr = adj_vals_in_arr(arr, start_x_idx, y_idx, perturbed_vals)
     filled_write_file_path = fill_write_file_path(write_file_path, read_file_path, overwrite_file, "adj/")
     filled_write_file_name = fill_write_file_name(file_name, write_file_name, overwrite_file)
+    write_cols_idx = get_write_cols_idx(file_ext)
     open(filled_write_file_path * filled_write_file_name * file_ext, "w") do io
         if only_write_changed_cols
-            writedlm(io, adj_arr[:, y_idx])
+            writedlm(io, adj_arr[:, write_cols_idx])
         else
             writedlm(io, adj_arr)
         end
@@ -81,9 +84,10 @@ function adj_params(read_file_path::String, file_name::String, file_ext::String,
     adj_arr = adj_vals_in_arr(arr, start_x_idx, y_idx, perturbed_vals)
     filled_write_file_path = fill_write_file_path(write_file_path, read_file_path, overwrite_file, "adj/")
     filled_write_file_name = fill_write_file_name(file_name, write_file_name, overwrite_file)
+    write_cols_idx = get_write_cols_idx(file_ext)
     open(filled_write_file_path * filled_write_file_name * file_ext, "w") do io
         if only_write_changed_cols
-            writedlm(io, adj_arr[:, y_idx])
+            writedlm(io, adj_arr[:, write_cols_idx])
         else
             writedlm(io, adj_arr)
         end
@@ -104,9 +108,10 @@ function adj_params(read_file_path::String, file_name::String, file_ext::String,
     adj_arr = adj_vals_in_arr(arr, start_x_idx, y_idx, perturbed_vals)
     filled_write_file_path = fill_write_file_path(write_file_path, read_file_path, overwrite_file, "adj/")
     filled_write_file_name = fill_write_file_name(file_name, write_file_name, overwrite_file)
+    write_cols_idx = get_write_cols_idx(file_ext)
     open(filled_write_file_path * filled_write_file_name * file_ext, "w") do io
         if only_write_changed_cols
-            writedlm(io, adj_arr[:, y_idx])
+            writedlm(io, adj_arr[:, write_cols_idx])
         else
             writedlm(io, adj_arr)
         end
@@ -126,9 +131,10 @@ function adj_params(read_file_path::String, file_name::String, file_ext::String,
     adj_arr = adj_vals_in_arr(arr, start_x_idx, y_idx, perturbed_vals)
     filled_write_file_path = fill_write_file_path(write_file_path, read_file_path, overwrite_file, "adj/")
     filled_write_file_name = fill_write_file_name(file_name, write_file_name, overwrite_file)
+    write_cols_idx = get_write_cols_idx(file_ext)
     open(filled_write_file_path * filled_write_file_name * file_ext, "w") do io
         if only_write_changed_cols
-            writedlm(io, adj_arr[:, y_idx])
+            writedlm(io, adj_arr[:, write_cols_idx])
         else
             writedlm(io, adj_arr)
         end
@@ -287,6 +293,21 @@ function get_y_idx(file_ext::String, rateA::Bool)
         return 6:6
     else
         throw(DomainError(file_ext, "file_ext is not properly defined for the number of boolean parameters given."))
+    end
+end
+
+function get_write_cols_idx(file_ext::String)
+    if file_ext ∈ (".bus", ".gen")
+        P, Q = (true, true)
+        return get_y_idx(file_ext, P, Q)
+    elseif file_ext == ".gencost"
+        c2, c1, c0 = (true, true, true)
+        return get_y_idx(file_ext, c2, c1, c0)
+    elseif file_ext == ".branch"
+        rateA = true
+        return get_y_idx(file_ext, rateA)
+    else
+        throw(DomainError(file_ext, "file_ext is not properly defined."))
     end
 end
 
