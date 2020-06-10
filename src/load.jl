@@ -83,7 +83,7 @@ mutable struct CaseData
   phys::Array{Phys,1}
 end
 
-function load_case(case_name, case_path, lineOff=Line(); other::Bool=true)
+function load_case(case_name::String, case_path::String, lineOff::Line=Line(); other::Bool=true)
   case_path = complete_file_path(case_path)
   case_name = case_path * case_name
 
@@ -209,6 +209,151 @@ function load_case(case_name, case_path, lineOff=Line(); other::Bool=true)
   #
   if other == true
     phys_arr = readdlm(case_name * ".phys")
+    phys = []
+    for i in 1:size(phys_arr,1)
+      p = Phys(phys_arr[i,:]...)
+      push!(phys, p)
+    end
+  end
+
+  #
+  # return
+  #
+  opf = OPFData(StructArray(buses), StructArray(lines), StructArray(generators), bus_ref, baseMVA, busIdx, FromLines, ToLines, BusGeners)
+  if other == true
+    CD = CaseData(opf, phys)
+    return CD
+  else
+    return opf
+  end
+end
+
+function load_case(read_file_path::String, base_file_name::String, aux_file_name::Union{String, NTuple{N, String}}, file_ext::Union{String, NTuple{N, String}}, lineOff::Line=Line(); other::Bool=true, T::Type=Float64) where {N}
+  base_files = compose_file(read_file_path, base_file_name, aux_file_name, file_ext, T=T)
+  completed_base_files = complete_base_files(base_files, read_file_path, base_file_name, T=T)
+
+  #
+  # load buses
+  #
+  bus_arr = completed_base_files[".bus"]
+  num_buses = size(bus_arr,1)
+  buses = Array{Bus,1}(undef, num_buses)
+  bus_ref=-1
+  for i in 1:num_buses
+    @assert bus_arr[i,1]>0  # don't support nonpositive bus ids
+    bus_arr[i,9] *= pi/180  # ANIRUDH: Bus is an immutable struct. Modify bus_arr itself
+    buses[i] = Bus(bus_arr[i,1:13]...)
+    # buses[i].Va *= pi/180 # ANIRUDH: See previous comment
+    if buses[i].bustype==3
+      if bus_ref>0
+        error("More than one reference bus present in the data")
+      else
+         bus_ref=i
+      end
+    end
+    # println("bus ", i, " ", buses[i].Vmin, "      ", buses[i].Vmax)
+  end
+
+  #
+  # load branches/lines
+  #
+  branch_arr = completed_base_files[".branch"]
+  num_lines = size(branch_arr,1)
+  lines_on = findall((branch_arr[:,11].>0) .& ((branch_arr[:,1].!=lineOff.from) .| (branch_arr[:,2].!=lineOff.to)))
+  num_on   = length(lines_on)
+
+  if lineOff.from>0 && lineOff.to>0
+    println("opf_loaddata: was asked to remove line from,to=", lineOff.from, ",", lineOff.to)
+    #println(lines_on, branch_arr[:,1].!=lineOff.from, branch_arr[:,2].!=lineOff.to)
+  end
+  if length(findall(branch_arr[:,11].==0))>0
+    println("opf_loaddata: ", num_lines-length(findall(branch_arr[:,11].>0)), " lines are off and will be discarded (out of ", num_lines, ")")
+  end
+
+  lines = Array{Line,1}(undef, num_on)
+
+  lit=0
+  for i in lines_on
+    @assert branch_arr[i,11] == 1  #should be on since we discarded all other
+    lit += 1
+    lines[lit] = Line(lit, branch_arr[i, 1:13]...)
+    # if lines[lit].angmin>-360 || lines[lit].angmax<360
+    #   error("Bounds of voltage angles are still to be implemented.")
+    # end
+  end
+  @assert lit == num_on
+
+  #
+  # load generators
+  #
+  gen_arr = completed_base_files[".gen"]
+  costgen_arr = completed_base_files[".gencost"]
+  num_gens = size(gen_arr,1)
+
+  baseMVA=100
+
+  @assert num_gens == size(costgen_arr,1)
+
+  gens_on=findall(gen_arr[:,8] .== 1.0); num_on=length(gens_on)
+  if num_gens-num_on>0
+    println("loaddata: ", num_gens-num_on, " generators are off and will be discarded (out of ", num_gens, ")")
+  end
+
+  generators = Array{Gener,1}(undef, num_on)
+  i=0
+  for git in gens_on
+    i += 1
+    generators[i] = Gener(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, Int64[0]) #gen_arr[i,1:end]...)
+
+    generators[i].bus      = gen_arr[git,1]
+    generators[i].Pg       = gen_arr[git,2] / baseMVA
+    generators[i].Qg       = gen_arr[git,3] / baseMVA
+    generators[i].Qmax     = gen_arr[git,4] / baseMVA
+    generators[i].Qmin     = gen_arr[git,5] / baseMVA
+    generators[i].Vg       = gen_arr[git,6]
+    generators[i].mBase    = gen_arr[git,7]
+    generators[i].status   = gen_arr[git,8]
+    @assert generators[i].status==1
+    generators[i].Pmax     = gen_arr[git,9]  / baseMVA
+    generators[i].Pmin     = gen_arr[git,10] / baseMVA
+    generators[i].Pc1      = gen_arr[git,11]
+    generators[i].Pc2      = gen_arr[git,12]
+    generators[i].Qc1min   = gen_arr[git,13]
+    generators[i].Qc1max   = gen_arr[git,14]
+    generators[i].Qc2min   = gen_arr[git,15]
+    generators[i].Qc2max   = gen_arr[git,16]
+    generators[i].gentype  = costgen_arr[git,1]
+    generators[i].startup  = costgen_arr[git,2]
+    generators[i].shutdown = costgen_arr[git,3]
+    generators[i].n        = costgen_arr[git,4]
+    if generators[i].gentype == 1
+      generators[i].coeff = costgen_arr[git,5:end]
+      error("Piecewise linear costs remains to be implemented.")
+    else
+      if generators[i].gentype == 2
+        generators[i].coeff = costgen_arr[git,5:end]
+        #println(generators[i].coeff, " ", length(generators[i].coeff), " ", generators[i].coeff[2])
+      else
+        generators[i].coeff = costgen_arr[git,5:end]
+        # error("Invalid generator cost model in the data.") ## NOTE: JR removed because I need slack/reference...
+      end
+    end
+  end
+
+  # build a dictionary between buses ids and their indexes
+  busIdx = mapBusIdToIdx(buses)
+
+  # set up the FromLines and ToLines for each bus
+  FromLines,ToLines = mapLinesToBuses(buses, lines, busIdx)
+
+  # generators at each bus
+  BusGeners = mapGenersToBuses(buses, generators, busIdx)
+
+  #
+  # load physical
+  #
+  if other == true
+    phys_arr = completed_base_files[".phys"]
     phys = []
     for i in 1:size(phys_arr,1)
       p = Phys(phys_arr[i,:]...)
@@ -488,4 +633,15 @@ function mapGenersToBuses(opfdata::OPFData)
     end
   end
   return D
+end
+
+# complete the base_files dictionary if not composed
+function complete_base_files(base_files::Dict, file_path::String, file_name::String; T::Type=Float64)
+  file_exts = (".bus", ".branch", ".gen", ".gencost", ".phys")
+  for f_ext in file_exts
+    if !haskey(base_files, f_ext)
+      base_files[f_ext] = readdlm(file_path * file_name * f_ext, T)
+    end
+  end
+  return base_files
 end
