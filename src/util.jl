@@ -116,3 +116,26 @@ function get_Bs_psd_adjustments(opfdata::OPFData, options::Dict, verb::Bool=fals
     end
     return Bs_adj
 end
+
+function update_case!(casedata::CaseData; buses=nothing, lines=nothing, generators=nothing)
+    if !isnothing(buses)
+      # build a dictionary between buses ids and their indexes
+      casedata.opf.BusIdx .= mapBusIdToIdx(buses)
+      casedata.opf.bus_ref .= findall(buses.bustype .== 3)[1]
+    end
+  
+    if !isnothing(lines)
+      # set up the FromLines and ToLines for each bus
+      buses = casedata.opf.buses
+      fl, tl = mapLinesToBuses(buses, lines, casedata.opf.BusIdx)
+      casedata.opf.FromLines = fl
+      casedata.opf.ToLines = tl
+    end
+  
+    if !isnothing(generators)
+      # generators at each bus
+      buses = casedata.opf.buses
+      casedata.opf.BusGeners = mapGenersToBuses(buses, generators, casedata.opf.BusIdx)
+    end
+  end
+  
