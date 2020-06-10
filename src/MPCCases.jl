@@ -9,9 +9,11 @@ export load_case
 export mapLinesToBuses
 export mapBusIdToIdx, mapIdxToBusId
 export mapGenersToBuses
-export computeAdmitances, computeAdmittances, computeAdmittanceMatrix
 export OPFData
 export CaseData
+
+include("admittance.jl")
+export computeAdmitances, computeAdmittances, computeAdmittanceMatrix
 
 include("adjust.jl")
 export adj_params, adj_multi_params
