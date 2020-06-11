@@ -336,11 +336,14 @@ end
 # Adjusting Parameters for Multiple Cases
 
 # 1
-function adj_multi_params(adj_case_path::Union{String, NTuple{N, String}}, adj_case_name::Union{String, NTuple{N, String}}, adj_case_ext::Union{String, Tuple{String, Vararg{String}}}, 
-                          P::Bool, Q::Bool, prod_fac::Union{Real, NTuple{N, Real}}, add_fac::Union{Real, NTuple{N, Real}}; 
-                          start_x_idx::Int=1, end_x_idx::Int=0, T::Type=Float64, mean::Union{Nothing, Real, NTuple{N, Real}}=nothing, sd::Union{Nothing, Real, NTuple{N, Real}}=nothing, 
-                          overwrite_file::Bool=false, write_file_path::Union{String, NTuple{N, String}}="", write_file_name::Union{String, NTuple{N, String}}="", only_write_changed_cols::Bool=false, 
-                          seed::Union{Nothing, Int}=nothing) where {N}
+function adj_multi_params(adj_case_path::Union{String, Tuple{String, Vararg{String}}}, adj_case_name::Union{String, Tuple{String, Vararg{String}}}, adj_case_ext::Union{String, Tuple{String, Vararg{String}}}, 
+                          P::Bool, Q::Bool, prod_fac::Union{Real, Tuple{Real, Vararg{Real}}}, add_fac::Union{Real, Tuple{Real, Vararg{Real}}}; 
+                          start_x_idx::Int=1, end_x_idx::Int=0, T::Type=Float64, mean::Union{Nothing, Real, Tuple{Real, Vararg{Real}}}=nothing, sd::Union{Nothing, Real, Tuple{Real, Vararg{Real}}}=nothing, 
+                          overwrite_file::Bool=false, write_file_path::Union{String, Tuple{String, Vararg{String}}}="", write_file_name::Union{String, Tuple{String, Vararg{String}}}="", only_write_changed_cols::Bool=false, 
+                          seed::Union{Nothing, Int}=nothing)
+    N = lcm(length(adj_case_path), length(adj_case_name), length(adj_case_ext), 
+            length(prod_fac), length(add_fac), length(mean), length(sd), 
+            length(write_file_path), length(write_file_name))
     adj_case_path = isa(adj_case_path, Union{String, Tuple{String}}) ? match_length(String(adj_case_path), N) : adj_case_path
     adj_case_name = isa(adj_case_name, Union{String, Tuple{String}}) ? match_length(String(adj_case_name), N) : adj_case_name
     adj_case_ext = isa(adj_case_ext, Union{String, Tuple{String}}) ? match_length(String(adj_case_ext), N) : adj_case_ext
@@ -355,7 +358,8 @@ function adj_multi_params(adj_case_path::Union{String, NTuple{N, String}}, adj_c
     rng = isnothing(seed) ? MersenneTwister() : MersenneTwister(seed)
     sub_seeds = isnothing(seed) ? match_length(seed, N) : Tuple(rand(rng, Int, N))
 
-    @assert length(adj_case_path) == length(adj_case_name) == length(adj_case_ext) == length(write_file_path) == 
+    @assert length(adj_case_path) == length(adj_case_name) == length(adj_case_ext) == 
+            length(write_file_path) == length(write_file_name) ==
             length(p_fac) == length(a_fac) == length(m) == length(s) == length(sub_seeds)
 
     for idx in 1:N
@@ -367,11 +371,14 @@ function adj_multi_params(adj_case_path::Union{String, NTuple{N, String}}, adj_c
 end
 
 # 2
-function adj_multi_params(adj_case_path::Union{String, NTuple{N, String}}, adj_case_name::Union{String, NTuple{N, String}}, adj_case_ext::Union{String, Tuple{String, Vararg{String}}}, 
+function adj_multi_params(adj_case_path::Union{String, Tuple{String, Vararg{String}}}, adj_case_name::Union{String, Tuple{String, Vararg{String}}}, adj_case_ext::Union{String, Tuple{String, Vararg{String}}}, 
                           P::Bool, Q::Bool, vals::Union{VecOrMat{<:Real}, NTuple{N, VecOrMat{<:Real}}}; 
-                          start_x_idx::Int=1, end_x_idx::Int=0, T::Type=Float64, mean::Union{Nothing, Real, NTuple{N, Real}}=nothing, sd::Union{Nothing, Real, NTuple{N, Real}}=nothing, 
-                          overwrite_file::Bool=false, write_file_path::Union{String, NTuple{N, String}}="", write_file_name::Union{String, NTuple{N, String}}="", only_write_changed_cols::Bool=false, 
+                          start_x_idx::Int=1, end_x_idx::Int=0, T::Type=Float64, mean::Union{Nothing, Real, Tuple{Real, Vararg{Real}}}=nothing, sd::Union{Nothing, Real, Tuple{Real, Vararg{Real}}}=nothing, 
+                          overwrite_file::Bool=false, write_file_path::Union{String, Tuple{String, Vararg{String}}}="", write_file_name::Union{String, Tuple{String, Vararg{String}}}="", only_write_changed_cols::Bool=false, 
                           seed::Union{Nothing, Int}=nothing) where {N}
+    N = lcm(length(adj_case_path), length(adj_case_name), length(adj_case_ext), 
+            length(vals), length(mean), length(sd), 
+            length(write_file_path), length(write_file_name))
     adj_case_path = isa(adj_case_path, Union{String, Tuple{String}}) ? match_length(String(adj_case_path), N) : adj_case_path
     adj_case_name = isa(adj_case_name, Union{String, Tuple{String}}) ? match_length(String(adj_case_name), N) : adj_case_name
     adj_case_ext = isa(adj_case_ext, Union{String, Tuple{String}}) ? match_length(String(adj_case_ext), N) : adj_case_ext
@@ -385,7 +392,8 @@ function adj_multi_params(adj_case_path::Union{String, NTuple{N, String}}, adj_c
     rng = isnothing(seed) ? MersenneTwister() : MersenneTwister(seed)
     sub_seeds = isnothing(seed) ? match_length(seed, N) : Tuple(rand(rng, Int, N))
 
-    @assert length(adj_case_path) == length(adj_case_name) == length(adj_case_ext) == length(write_file_path) == 
+    @assert length(adj_case_path) == length(adj_case_name) == length(adj_case_ext) == 
+            length(write_file_path) == length(write_file_name) ==
             length(val) == length(m) == length(s) == length(sub_seeds)
 
     for idx in 1:N
@@ -397,11 +405,14 @@ function adj_multi_params(adj_case_path::Union{String, NTuple{N, String}}, adj_c
 end
 
 # 3
-function adj_multi_params(adj_case_path::Union{String, NTuple{N, String}}, adj_case_name::Union{String, NTuple{N, String}}, adj_case_ext::Union{String, Tuple{String, Vararg{String}}}, 
-                          c2::Bool, c1::Bool, c0::Bool, prod_fac::Union{Real, NTuple{N, Real}}, add_fac::Union{Real, NTuple{N, Real}}; 
-                          start_x_idx::Int=1, end_x_idx::Int=0, T::Type=Float64, mean::Union{Nothing, Real, NTuple{N, Real}}=nothing, sd::Union{Nothing, Real, NTuple{N, Real}}=nothing, 
-                          overwrite_file::Bool=false, write_file_path::Union{String, NTuple{N, String}}="", write_file_name::Union{String, NTuple{N, String}}="", only_write_changed_cols::Bool=false, 
-                          seed::Union{Nothing, Int}=nothing) where {N}
+function adj_multi_params(adj_case_path::Union{String, Tuple{String, Vararg{String}}}, adj_case_name::Union{String, Tuple{String, Vararg{String}}}, adj_case_ext::Union{String, Tuple{String, Vararg{String}}}, 
+                          c2::Bool, c1::Bool, c0::Bool, prod_fac::Union{Real, Tuple{Real, Vararg{Real}}}, add_fac::Union{Real, Tuple{Real, Vararg{Real}}}; 
+                          start_x_idx::Int=1, end_x_idx::Int=0, T::Type=Float64, mean::Union{Nothing, Real, Tuple{Real, Vararg{Real}}}=nothing, sd::Union{Nothing, Real, Tuple{Real, Vararg{Real}}}=nothing, 
+                          overwrite_file::Bool=false, write_file_path::Union{String, Tuple{String, Vararg{String}}}="", write_file_name::Union{String, Tuple{String, Vararg{String}}}="", only_write_changed_cols::Bool=false, 
+                          seed::Union{Nothing, Int}=nothing)
+    N = lcm(length(adj_case_path), length(adj_case_name), length(adj_case_ext), 
+            length(prod_fac), length(add_fac), length(mean), length(sd), 
+            length(write_file_path), length(write_file_name))
     adj_case_path = isa(adj_case_path, Union{String, Tuple{String}}) ? match_length(String(adj_case_path), N) : adj_case_path
     adj_case_name = isa(adj_case_name, Union{String, Tuple{String}}) ? match_length(String(adj_case_name), N) : adj_case_name
     adj_case_ext = isa(adj_case_ext, Union{String, Tuple{String}}) ? match_length(String(adj_case_ext), N) : adj_case_ext
@@ -416,7 +427,8 @@ function adj_multi_params(adj_case_path::Union{String, NTuple{N, String}}, adj_c
     rng = isnothing(seed) ? MersenneTwister() : MersenneTwister(seed)
     sub_seeds = isnothing(seed) ? match_length(seed, N) : Tuple(rand(rng, Int, N))
 
-    @assert length(adj_case_path) == length(adj_case_name) == length(adj_case_ext) == length(write_file_path) == 
+    @assert length(adj_case_path) == length(adj_case_name) == length(adj_case_ext) == 
+            length(write_file_path) == length(write_file_name) ==
             length(p_fac) == length(a_fac) == length(m) == length(s) == length(sub_seeds)
 
     for idx in 1:N
@@ -428,11 +440,14 @@ function adj_multi_params(adj_case_path::Union{String, NTuple{N, String}}, adj_c
 end
 
 # 4
-function adj_multi_params(adj_case_path::Union{String, NTuple{N, String}}, adj_case_name::Union{String, NTuple{N, String}}, adj_case_ext::Union{String, Tuple{String, Vararg{String}}}, 
+function adj_multi_params(adj_case_path::Union{String, Tuple{String, Vararg{String}}}, adj_case_name::Union{String, Tuple{String, Vararg{String}}}, adj_case_ext::Union{String, Tuple{String, Vararg{String}}}, 
                           c2::Bool, c1::Bool, c0::Bool, vals::Union{VecOrMat{<:Real}, NTuple{N, VecOrMat{<:Real}}}; 
-                          start_x_idx::Int=1, end_x_idx::Int=0, T::Type=Float64, mean::Union{Nothing, Real, NTuple{N, Real}}=nothing, sd::Union{Nothing, Real, NTuple{N, Real}}=nothing, 
-                          overwrite_file::Bool=false, write_file_path::Union{String, NTuple{N, String}}="", write_file_name::Union{String, NTuple{N, String}}="", only_write_changed_cols::Bool=false, 
+                          start_x_idx::Int=1, end_x_idx::Int=0, T::Type=Float64, mean::Union{Nothing, Real, Tuple{Real, Vararg{Real}}}=nothing, sd::Union{Nothing, Real, Tuple{Real, Vararg{Real}}}=nothing, 
+                          overwrite_file::Bool=false, write_file_path::Union{String, Tuple{String, Vararg{String}}}="", write_file_name::Union{String, Tuple{String, Vararg{String}}}="", only_write_changed_cols::Bool=false, 
                           seed::Union{Nothing, Int}=nothing) where {N}
+    N = lcm(length(adj_case_path), length(adj_case_name), length(adj_case_ext), 
+            length(vals), length(mean), length(sd), 
+            length(write_file_path), length(write_file_name))
     adj_case_path = isa(adj_case_path, Union{String, Tuple{String}}) ? match_length(String(adj_case_path), N) : adj_case_path
     adj_case_name = isa(adj_case_name, Union{String, Tuple{String}}) ? match_length(String(adj_case_name), N) : adj_case_name
     adj_case_ext = isa(adj_case_ext, Union{String, Tuple{String}}) ? match_length(String(adj_case_ext), N) : adj_case_ext
@@ -446,7 +461,8 @@ function adj_multi_params(adj_case_path::Union{String, NTuple{N, String}}, adj_c
     rng = isnothing(seed) ? MersenneTwister() : MersenneTwister(seed)
     sub_seeds = isnothing(seed) ? match_length(seed, N) : Tuple(rand(rng, Int, N))
 
-    @assert length(adj_case_path) == length(adj_case_name) == length(adj_case_ext) == length(write_file_path) == 
+    @assert length(adj_case_path) == length(adj_case_name) == length(adj_case_ext) == 
+            length(write_file_path) == length(write_file_name) ==
             length(val) == length(m) == length(s) == length(sub_seeds)
 
     for idx in 1:N
@@ -458,11 +474,14 @@ function adj_multi_params(adj_case_path::Union{String, NTuple{N, String}}, adj_c
 end
 
 # 5
-function adj_multi_params(adj_case_path::Union{String, NTuple{N, String}}, adj_case_name::Union{String, NTuple{N, String}}, adj_case_ext::Union{String, Tuple{String, Vararg{String}}}, 
-                          rateA::Bool, prod_fac::Union{Real, NTuple{N, Real}}, add_fac::Union{Real, NTuple{N, Real}}; 
-                          start_x_idx::Int=1, end_x_idx::Int=0, T::Type=Float64, mean::Union{Nothing, Real, NTuple{N, Real}}=nothing, sd::Union{Nothing, Real, NTuple{N, Real}}=nothing, 
-                          overwrite_file::Bool=false, write_file_path::Union{String, NTuple{N, String}}="", write_file_name::Union{String, NTuple{N, String}}="", only_write_changed_cols::Bool=false, 
-                          seed::Union{Nothing, Int}=nothing) where {N}
+function adj_multi_params(adj_case_path::Union{String, Tuple{String, Vararg{String}}}, adj_case_name::Union{String, Tuple{String, Vararg{String}}}, adj_case_ext::Union{String, Tuple{String, Vararg{String}}}, 
+                          rateA::Bool, prod_fac::Union{Real, Tuple{Real, Vararg{Real}}}, add_fac::Union{Real, Tuple{Real, Vararg{Real}}}; 
+                          start_x_idx::Int=1, end_x_idx::Int=0, T::Type=Float64, mean::Union{Nothing, Real, Tuple{Real, Vararg{Real}}}=nothing, sd::Union{Nothing, Real, Tuple{Real, Vararg{Real}}}=nothing, 
+                          overwrite_file::Bool=false, write_file_path::Union{String, Tuple{String, Vararg{String}}}="", write_file_name::Union{String, Tuple{String, Vararg{String}}}="", only_write_changed_cols::Bool=false, 
+                          seed::Union{Nothing, Int}=nothing)
+    N = lcm(length(adj_case_path), length(adj_case_name), length(adj_case_ext), 
+            length(prod_fac), length(add_fac), length(mean), length(sd), 
+            length(write_file_path), length(write_file_name))
     adj_case_path = isa(adj_case_path, Union{String, Tuple{String}}) ? match_length(String(adj_case_path), N) : adj_case_path
     adj_case_name = isa(adj_case_name, Union{String, Tuple{String}}) ? match_length(String(adj_case_name), N) : adj_case_name
     adj_case_ext = isa(adj_case_ext, Union{String, Tuple{String}}) ? match_length(String(adj_case_ext), N) : adj_case_ext
@@ -477,7 +496,8 @@ function adj_multi_params(adj_case_path::Union{String, NTuple{N, String}}, adj_c
     rng = isnothing(seed) ? MersenneTwister() : MersenneTwister(seed)
     sub_seeds = isnothing(seed) ? match_length(seed, N) : Tuple(rand(rng, Int, N))
 
-    @assert length(adj_case_path) == length(adj_case_name) == length(adj_case_ext) == length(write_file_path) == 
+    @assert length(adj_case_path) == length(adj_case_name) == length(adj_case_ext) == 
+            length(write_file_path) == length(write_file_name) ==
             length(p_fac) == length(a_fac) == length(m) == length(s) == length(sub_seeds)
 
     for idx in 1:N
@@ -489,11 +509,14 @@ function adj_multi_params(adj_case_path::Union{String, NTuple{N, String}}, adj_c
 end
 
 # 6
-function adj_multi_params(adj_case_path::Union{String, NTuple{N, String}}, adj_case_name::Union{String, NTuple{N, String}}, adj_case_ext::Union{String, Tuple{String, Vararg{String}}}, 
+function adj_multi_params(adj_case_path::Union{String, Tuple{String, Vararg{String}}}, adj_case_name::Union{String, Tuple{String, Vararg{String}}}, adj_case_ext::Union{String, Tuple{String, Vararg{String}}}, 
                           rateA::Bool, vals::Union{VecOrMat{<:Real}, NTuple{N, VecOrMat{<:Real}}}; 
-                          start_x_idx::Int=1, end_x_idx::Int=0, T::Type=Float64, mean::Union{Nothing, Real, NTuple{N, Real}}=nothing, sd::Union{Nothing, Real, NTuple{N, Real}}=nothing, 
-                          overwrite_file::Bool=false, write_file_path::Union{String, NTuple{N, String}}="", write_file_name::Union{String, NTuple{N, String}}="", only_write_changed_cols::Bool=false, 
+                          start_x_idx::Int=1, end_x_idx::Int=0, T::Type=Float64, mean::Union{Nothing, Real, Tuple{Real, Vararg{Real}}}=nothing, sd::Union{Nothing, Real, Tuple{Real, Vararg{Real}}}=nothing, 
+                          overwrite_file::Bool=false, write_file_path::Union{String, Tuple{String, Vararg{String}}}="", write_file_name::Union{String, Tuple{String, Vararg{String}}}="", only_write_changed_cols::Bool=false, 
                           seed::Union{Nothing, Int}=nothing) where {N}
+    N = lcm(length(adj_case_path), length(adj_case_name), length(adj_case_ext), 
+            length(vals), length(mean), length(sd), 
+            length(write_file_path), length(write_file_name))
     adj_case_path = isa(adj_case_path, Union{String, Tuple{String}}) ? match_length(String(adj_case_path), N) : adj_case_path
     adj_case_name = isa(adj_case_name, Union{String, Tuple{String}}) ? match_length(String(adj_case_name), N) : adj_case_name
     adj_case_ext = isa(adj_case_ext, Union{String, Tuple{String}}) ? match_length(String(adj_case_ext), N) : adj_case_ext
@@ -507,7 +530,8 @@ function adj_multi_params(adj_case_path::Union{String, NTuple{N, String}}, adj_c
     rng = isnothing(seed) ? MersenneTwister() : MersenneTwister(seed)
     sub_seeds = isnothing(seed) ? match_length(seed, N) : Tuple(rand(rng, Int, N))
 
-    @assert length(adj_case_path) == length(adj_case_name) == length(adj_case_ext) == length(write_file_path) == 
+    @assert length(adj_case_path) == length(adj_case_name) == length(adj_case_ext) == 
+            length(write_file_path) == length(write_file_name) ==
             length(val) == length(m) == length(s) == length(sub_seeds)
 
     for idx in 1:N
@@ -519,11 +543,14 @@ function adj_multi_params(adj_case_path::Union{String, NTuple{N, String}}, adj_c
 end
 
 # 7
-function adj_multi_params(adj_case_path::Union{String, NTuple{N, String}}, adj_case_name::Union{String, NTuple{N, String}}, adj_case_ext::NTuple{N, String}, 
-                          P::Union{Bool, Tuple{Bool, Vararg{Bool}}}, Q::Union{Bool, Tuple{Bool, Vararg{Bool}}}, c2::Bool, c1::Bool, c0::Bool, rateA::Bool, prod_fac::Union{Real, NTuple{N, Real}}, add_fac::Union{Real, NTuple{N, Real}}; 
-                          start_x_idx::Int=1, end_x_idx::Int=0, T::Type=Float64, mean::Union{Nothing, Real, NTuple{N, Real}}=nothing, sd::Union{Nothing, Real, NTuple{N, Real}}=nothing, 
-                          overwrite_file::Bool=false, write_file_path::Union{String, NTuple{N, String}}="", write_file_name::Union{String, NTuple{N, String}}="", only_write_changed_cols::Bool=false, 
-                          seed::Union{Nothing, Int}=nothing) where {N}
+function adj_multi_params(adj_case_path::Union{String, Tuple{String, Vararg{String}}}, adj_case_name::Union{String, Tuple{String, Vararg{String}}}, adj_case_ext::Tuple{String, Vararg{String}}, 
+                          P::Union{Bool, Tuple{Bool, Vararg{Bool}}}, Q::Union{Bool, Tuple{Bool, Vararg{Bool}}}, c2::Bool, c1::Bool, c0::Bool, rateA::Bool, prod_fac::Union{Real, Tuple{Real, Vararg{Real}}}, add_fac::Union{Real, Tuple{Real, Vararg{Real}}}; 
+                          start_x_idx::Int=1, end_x_idx::Int=0, T::Type=Float64, mean::Union{Nothing, Real, Tuple{Real, Vararg{Real}}}=nothing, sd::Union{Nothing, Real, Tuple{Real, Vararg{Real}}}=nothing, 
+                          overwrite_file::Bool=false, write_file_path::Union{String, Tuple{String, Vararg{String}}}="", write_file_name::Union{String, Tuple{String, Vararg{String}}}="", only_write_changed_cols::Bool=false, 
+                          seed::Union{Nothing, Int}=nothing)
+    N = lcm(length(adj_case_path), length(adj_case_name), length(adj_case_ext), 
+            length(prod_fac), length(add_fac), length(mean), length(sd), 
+            length(write_file_path), length(write_file_name))
     adj_case_path = isa(adj_case_path, Union{String, Tuple{String}}) ? match_length(String(adj_case_path), N) : adj_case_path
     adj_case_name = isa(adj_case_name, Union{String, Tuple{String}}) ? match_length(String(adj_case_name), N) : adj_case_name
     write_file_path = (!overwrite_file & isa(write_file_path, Union{String, Tuple{String}})) ? match_length(String(write_file_path), N) : write_file_path
@@ -537,7 +564,8 @@ function adj_multi_params(adj_case_path::Union{String, NTuple{N, String}}, adj_c
     rng = isnothing(seed) ? MersenneTwister() : MersenneTwister(seed)
     sub_seeds = isnothing(seed) ? match_length(seed, N) : Tuple(rand(rng, Int, N))
 
-    @assert length(adj_case_path) == length(adj_case_name) == length(adj_case_ext) == length(write_file_path) == 
+    @assert length(adj_case_path) == length(adj_case_name) == length(adj_case_ext) == 
+            length(write_file_path) == length(write_file_name) ==
             length(p_fac) == length(a_fac) == length(m) == length(s) == length(sub_seeds)
 
     for idx in 1:N
@@ -549,11 +577,14 @@ function adj_multi_params(adj_case_path::Union{String, NTuple{N, String}}, adj_c
 end
 
 # 8
-function adj_multi_params(adj_case_path::Union{String, NTuple{N, String}}, adj_case_name::Union{String, NTuple{N, String}}, adj_case_ext::NTuple{N, String}, 
+function adj_multi_params(adj_case_path::Union{String, Tuple{String, Vararg{String}}}, adj_case_name::Union{String, Tuple{String, Vararg{String}}}, adj_case_ext::NTuple{N, String}, 
                           P::Union{Bool, Tuple{Bool, Vararg{Bool}}}, Q::Union{Bool, Tuple{Bool, Vararg{Bool}}}, c2::Bool, c1::Bool, c0::Bool, rateA::Bool, vals::Union{VecOrMat{<:Real}, NTuple{N, VecOrMat{<:Real}}}; 
-                          start_x_idx::Int=1, end_x_idx::Int=0, T::Type=Float64, mean::Union{Nothing, Real, NTuple{N, Real}}=nothing, sd::Union{Nothing, Real, NTuple{N, Real}}=nothing, 
-                          overwrite_file::Bool=false, write_file_path::Union{String, NTuple{N, String}}="", write_file_name::Union{String, NTuple{N, String}}="", only_write_changed_cols::Bool=false, 
+                          start_x_idx::Int=1, end_x_idx::Int=0, T::Type=Float64, mean::Union{Nothing, Real, Tuple{Real, Vararg{Real}}}=nothing, sd::Union{Nothing, Real, Tuple{Real, Vararg{Real}}}=nothing, 
+                          overwrite_file::Bool=false, write_file_path::Union{String, Tuple{String, Vararg{String}}}="", write_file_name::Union{String, Tuple{String, Vararg{String}}}="", only_write_changed_cols::Bool=false, 
                           seed::Union{Nothing, Int}=nothing) where {N}
+    N = lcm(length(adj_case_path), length(adj_case_name), length(adj_case_ext), 
+            length(vals), length(mean), length(sd), 
+            length(write_file_path), length(write_file_name))
     adj_case_path = isa(adj_case_path, Union{String, Tuple{String}}) ? match_length(String(adj_case_path), N) : adj_case_path
     adj_case_name = isa(adj_case_name, Union{String, Tuple{String}}) ? match_length(String(adj_case_name), N) : adj_case_name
     write_file_path = (!overwrite_file & isa(write_file_path, Union{String, NTuple{1, String}})) ? match_length(String(write_file_path), N) : write_file_path
@@ -566,7 +597,8 @@ function adj_multi_params(adj_case_path::Union{String, NTuple{N, String}}, adj_c
     rng = isnothing(seed) ? MersenneTwister() : MersenneTwister(seed)
     sub_seeds = isnothing(seed) ? match_length(seed, N) : Tuple(rand(rng, Int, N))
 
-    @assert length(adj_case_path) == length(adj_case_name) == length(adj_case_ext) == length(write_file_path) == 
+    @assert length(adj_case_path) == length(adj_case_name) == length(adj_case_ext) == 
+            length(write_file_path) == length(write_file_name) ==
             length(val) == length(m) == length(s) == length(sub_seeds)
 
     for idx in 1:N
