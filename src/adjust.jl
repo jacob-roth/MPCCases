@@ -356,7 +356,7 @@ function adj_multi_params(adj_case_path::Union{String, Tuple{String, Vararg{Stri
     s = isa(sd, Union{Real, Tuple{Real}}) ? match_length(sd..., N) : sd
 
     rng = isnothing(seed) ? MersenneTwister() : MersenneTwister(seed)
-    sub_seeds = isnothing(seed) ? match_length(seed, N) : Tuple(rand(rng, Int, N))
+    sub_seeds = isnothing(seed) ? match_length(seed, N) : Tuple(abs.(rand(rng, Int, N)))
 
     @assert length(adj_case_path) == length(adj_case_name) == length(adj_case_ext) == 
             length(write_file_path) == length(write_file_name) ==
@@ -390,7 +390,7 @@ function adj_multi_params(adj_case_path::Union{String, Tuple{String, Vararg{Stri
     s = isa(sd, Union{Real, Tuple{Real}}) ? match_length(sd..., N) : sd
 
     rng = isnothing(seed) ? MersenneTwister() : MersenneTwister(seed)
-    sub_seeds = isnothing(seed) ? match_length(seed, N) : Tuple(rand(rng, Int, N))
+    sub_seeds = isnothing(seed) ? match_length(seed, N) : Tuple(abs.(rand(rng, Int, N)))
 
     @assert length(adj_case_path) == length(adj_case_name) == length(adj_case_ext) == 
             length(write_file_path) == length(write_file_name) ==
@@ -425,7 +425,7 @@ function adj_multi_params(adj_case_path::Union{String, Tuple{String, Vararg{Stri
     s = isa(sd, Union{Real, Tuple{Real}}) ? match_length(sd..., N) : sd
 
     rng = isnothing(seed) ? MersenneTwister() : MersenneTwister(seed)
-    sub_seeds = isnothing(seed) ? match_length(seed, N) : Tuple(rand(rng, Int, N))
+    sub_seeds = isnothing(seed) ? match_length(seed, N) : Tuple(abs.(rand(rng, Int, N)))
 
     @assert length(adj_case_path) == length(adj_case_name) == length(adj_case_ext) == 
             length(write_file_path) == length(write_file_name) ==
@@ -459,7 +459,7 @@ function adj_multi_params(adj_case_path::Union{String, Tuple{String, Vararg{Stri
     s = isa(sd, Union{Real, Tuple{Real}}) ? match_length(sd..., N) : sd
 
     rng = isnothing(seed) ? MersenneTwister() : MersenneTwister(seed)
-    sub_seeds = isnothing(seed) ? match_length(seed, N) : Tuple(rand(rng, Int, N))
+    sub_seeds = isnothing(seed) ? match_length(seed, N) : Tuple(abs.(rand(rng, Int, N)))
 
     @assert length(adj_case_path) == length(adj_case_name) == length(adj_case_ext) == 
             length(write_file_path) == length(write_file_name) ==
@@ -494,7 +494,7 @@ function adj_multi_params(adj_case_path::Union{String, Tuple{String, Vararg{Stri
     s = isa(sd, Union{Real, Tuple{Real}}) ? match_length(sd..., N) : sd
 
     rng = isnothing(seed) ? MersenneTwister() : MersenneTwister(seed)
-    sub_seeds = isnothing(seed) ? match_length(seed, N) : Tuple(rand(rng, Int, N))
+    sub_seeds = isnothing(seed) ? match_length(seed, N) : Tuple(abs.(rand(rng, Int, N)))
 
     @assert length(adj_case_path) == length(adj_case_name) == length(adj_case_ext) == 
             length(write_file_path) == length(write_file_name) ==
@@ -528,7 +528,7 @@ function adj_multi_params(adj_case_path::Union{String, Tuple{String, Vararg{Stri
     s = isa(sd, Union{Real, Tuple{Real}}) ? match_length(sd..., N) : sd
 
     rng = isnothing(seed) ? MersenneTwister() : MersenneTwister(seed)
-    sub_seeds = isnothing(seed) ? match_length(seed, N) : Tuple(rand(rng, Int, N))
+    sub_seeds = isnothing(seed) ? match_length(seed, N) : Tuple(abs.(rand(rng, Int, N)))
 
     @assert length(adj_case_path) == length(adj_case_name) == length(adj_case_ext) == 
             length(write_file_path) == length(write_file_name) ==
@@ -562,7 +562,7 @@ function adj_multi_params(adj_case_path::Union{String, Tuple{String, Vararg{Stri
     s = isa(sd, Union{Real, Tuple{Real}}) ? match_length(sd..., N) : sd
 
     rng = isnothing(seed) ? MersenneTwister() : MersenneTwister(seed)
-    sub_seeds = isnothing(seed) ? match_length(seed, N) : Tuple(rand(rng, Int, N))
+    sub_seeds = isnothing(seed) ? match_length(seed, N) : Tuple(abs.(rand(rng, Int, N)))
 
     @assert length(adj_case_path) == length(adj_case_name) == length(adj_case_ext) == 
             length(write_file_path) == length(write_file_name) ==
@@ -595,7 +595,7 @@ function adj_multi_params(adj_case_path::Union{String, Tuple{String, Vararg{Stri
     s = isa(sd, Union{Real, Tuple{Real}}) ? match_length(sd..., N) : sd
 
     rng = isnothing(seed) ? MersenneTwister() : MersenneTwister(seed)
-    sub_seeds = isnothing(seed) ? match_length(seed, N) : Tuple(rand(rng, Int, N))
+    sub_seeds = isnothing(seed) ? match_length(seed, N) : Tuple(abs.(rand(rng, Int, N)))
 
     @assert length(adj_case_path) == length(adj_case_name) == length(adj_case_ext) == 
             length(write_file_path) == length(write_file_name) ==
