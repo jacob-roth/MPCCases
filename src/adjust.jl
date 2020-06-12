@@ -341,9 +341,9 @@ function adj_multi_params(adj_case_path::Union{String, Tuple{String, Vararg{Stri
                           start_x_idx::Int=1, end_x_idx::Int=0, T::Type=Float64, mean::Union{Nothing, Real, Tuple{Real, Vararg{Real}}}=nothing, sd::Union{Nothing, Real, Tuple{Real, Vararg{Real}}}=nothing, 
                           overwrite_file::Bool=false, write_file_path::Union{String, Tuple{String, Vararg{String}}}="", write_file_name::Union{String, Tuple{String, Vararg{String}}}="", only_write_changed_cols::Bool=false, 
                           seed::Union{Nothing, Int}=nothing)
-    N = lcm(length(adj_case_path), length(adj_case_name), length(adj_case_ext), 
-            length(prod_fac), length(add_fac), length(mean), length(sd), 
-            length(write_file_path), length(write_file_name))
+    args = (adj_case_path, adj_case_name, adj_case_ext, prod_fac, add_fac, mean, sd, write_file_path, write_file_name)
+    N = get_common_length(args)
+
     adj_case_path = isa(adj_case_path, Union{String, Tuple{String}}) ? match_length(String(adj_case_path), N) : adj_case_path
     adj_case_name = isa(adj_case_name, Union{String, Tuple{String}}) ? match_length(String(adj_case_name), N) : adj_case_name
     adj_case_ext = isa(adj_case_ext, Union{String, Tuple{String}}) ? match_length(String(adj_case_ext), N) : adj_case_ext
@@ -372,13 +372,13 @@ end
 
 # 2
 function adj_multi_params(adj_case_path::Union{String, Tuple{String, Vararg{String}}}, adj_case_name::Union{String, Tuple{String, Vararg{String}}}, adj_case_ext::Union{String, Tuple{String, Vararg{String}}}, 
-                          P::Bool, Q::Bool, vals::Union{VecOrMat{<:Real}, NTuple{N, VecOrMat{<:Real}}}; 
+                          P::Bool, Q::Bool, vals::Union{VecOrMat{<:Real}, NTuple{n, VecOrMat{<:Real}}}; 
                           start_x_idx::Int=1, end_x_idx::Int=0, T::Type=Float64, mean::Union{Nothing, Real, Tuple{Real, Vararg{Real}}}=nothing, sd::Union{Nothing, Real, Tuple{Real, Vararg{Real}}}=nothing, 
                           overwrite_file::Bool=false, write_file_path::Union{String, Tuple{String, Vararg{String}}}="", write_file_name::Union{String, Tuple{String, Vararg{String}}}="", only_write_changed_cols::Bool=false, 
-                          seed::Union{Nothing, Int}=nothing) where {N}
-    N = lcm(length(adj_case_path), length(adj_case_name), length(adj_case_ext), 
-            length(vals), length(mean), length(sd), 
-            length(write_file_path), length(write_file_name))
+                          seed::Union{Nothing, Int}=nothing) where {n}
+    args = (adj_case_path, adj_case_name, adj_case_ext, vals, mean, sd, write_file_path, write_file_name)
+    N = get_common_length(args)
+
     adj_case_path = isa(adj_case_path, Union{String, Tuple{String}}) ? match_length(String(adj_case_path), N) : adj_case_path
     adj_case_name = isa(adj_case_name, Union{String, Tuple{String}}) ? match_length(String(adj_case_name), N) : adj_case_name
     adj_case_ext = isa(adj_case_ext, Union{String, Tuple{String}}) ? match_length(String(adj_case_ext), N) : adj_case_ext
@@ -410,9 +410,9 @@ function adj_multi_params(adj_case_path::Union{String, Tuple{String, Vararg{Stri
                           start_x_idx::Int=1, end_x_idx::Int=0, T::Type=Float64, mean::Union{Nothing, Real, Tuple{Real, Vararg{Real}}}=nothing, sd::Union{Nothing, Real, Tuple{Real, Vararg{Real}}}=nothing, 
                           overwrite_file::Bool=false, write_file_path::Union{String, Tuple{String, Vararg{String}}}="", write_file_name::Union{String, Tuple{String, Vararg{String}}}="", only_write_changed_cols::Bool=false, 
                           seed::Union{Nothing, Int}=nothing)
-    N = lcm(length(adj_case_path), length(adj_case_name), length(adj_case_ext), 
-            length(prod_fac), length(add_fac), length(mean), length(sd), 
-            length(write_file_path), length(write_file_name))
+    args = (adj_case_path, adj_case_name, adj_case_ext, prod_fac, add_fac, mean, sd, write_file_path, write_file_name)
+    N = get_common_length(args)
+
     adj_case_path = isa(adj_case_path, Union{String, Tuple{String}}) ? match_length(String(adj_case_path), N) : adj_case_path
     adj_case_name = isa(adj_case_name, Union{String, Tuple{String}}) ? match_length(String(adj_case_name), N) : adj_case_name
     adj_case_ext = isa(adj_case_ext, Union{String, Tuple{String}}) ? match_length(String(adj_case_ext), N) : adj_case_ext
@@ -441,13 +441,13 @@ end
 
 # 4
 function adj_multi_params(adj_case_path::Union{String, Tuple{String, Vararg{String}}}, adj_case_name::Union{String, Tuple{String, Vararg{String}}}, adj_case_ext::Union{String, Tuple{String, Vararg{String}}}, 
-                          c2::Bool, c1::Bool, c0::Bool, vals::Union{VecOrMat{<:Real}, NTuple{N, VecOrMat{<:Real}}}; 
+                          c2::Bool, c1::Bool, c0::Bool, vals::Union{VecOrMat{<:Real}, NTuple{n, VecOrMat{<:Real}}}; 
                           start_x_idx::Int=1, end_x_idx::Int=0, T::Type=Float64, mean::Union{Nothing, Real, Tuple{Real, Vararg{Real}}}=nothing, sd::Union{Nothing, Real, Tuple{Real, Vararg{Real}}}=nothing, 
                           overwrite_file::Bool=false, write_file_path::Union{String, Tuple{String, Vararg{String}}}="", write_file_name::Union{String, Tuple{String, Vararg{String}}}="", only_write_changed_cols::Bool=false, 
-                          seed::Union{Nothing, Int}=nothing) where {N}
-    N = lcm(length(adj_case_path), length(adj_case_name), length(adj_case_ext), 
-            length(vals), length(mean), length(sd), 
-            length(write_file_path), length(write_file_name))
+                          seed::Union{Nothing, Int}=nothing) where {n}
+    args = (adj_case_path, adj_case_name, adj_case_ext, vals, mean, sd, write_file_path, write_file_name)
+    N = get_common_length(args)
+
     adj_case_path = isa(adj_case_path, Union{String, Tuple{String}}) ? match_length(String(adj_case_path), N) : adj_case_path
     adj_case_name = isa(adj_case_name, Union{String, Tuple{String}}) ? match_length(String(adj_case_name), N) : adj_case_name
     adj_case_ext = isa(adj_case_ext, Union{String, Tuple{String}}) ? match_length(String(adj_case_ext), N) : adj_case_ext
@@ -479,9 +479,9 @@ function adj_multi_params(adj_case_path::Union{String, Tuple{String, Vararg{Stri
                           start_x_idx::Int=1, end_x_idx::Int=0, T::Type=Float64, mean::Union{Nothing, Real, Tuple{Real, Vararg{Real}}}=nothing, sd::Union{Nothing, Real, Tuple{Real, Vararg{Real}}}=nothing, 
                           overwrite_file::Bool=false, write_file_path::Union{String, Tuple{String, Vararg{String}}}="", write_file_name::Union{String, Tuple{String, Vararg{String}}}="", only_write_changed_cols::Bool=false, 
                           seed::Union{Nothing, Int}=nothing)
-    N = lcm(length(adj_case_path), length(adj_case_name), length(adj_case_ext), 
-            length(prod_fac), length(add_fac), length(mean), length(sd), 
-            length(write_file_path), length(write_file_name))
+    args = (adj_case_path, adj_case_name, adj_case_ext, prod_fac, add_fac, mean, sd, write_file_path, write_file_name)
+    N = get_common_length(args)
+
     adj_case_path = isa(adj_case_path, Union{String, Tuple{String}}) ? match_length(String(adj_case_path), N) : adj_case_path
     adj_case_name = isa(adj_case_name, Union{String, Tuple{String}}) ? match_length(String(adj_case_name), N) : adj_case_name
     adj_case_ext = isa(adj_case_ext, Union{String, Tuple{String}}) ? match_length(String(adj_case_ext), N) : adj_case_ext
@@ -510,13 +510,13 @@ end
 
 # 6
 function adj_multi_params(adj_case_path::Union{String, Tuple{String, Vararg{String}}}, adj_case_name::Union{String, Tuple{String, Vararg{String}}}, adj_case_ext::Union{String, Tuple{String, Vararg{String}}}, 
-                          rateA::Bool, vals::Union{VecOrMat{<:Real}, NTuple{N, VecOrMat{<:Real}}}; 
+                          rateA::Bool, vals::Union{VecOrMat{<:Real}, NTuple{n, VecOrMat{<:Real}}}; 
                           start_x_idx::Int=1, end_x_idx::Int=0, T::Type=Float64, mean::Union{Nothing, Real, Tuple{Real, Vararg{Real}}}=nothing, sd::Union{Nothing, Real, Tuple{Real, Vararg{Real}}}=nothing, 
                           overwrite_file::Bool=false, write_file_path::Union{String, Tuple{String, Vararg{String}}}="", write_file_name::Union{String, Tuple{String, Vararg{String}}}="", only_write_changed_cols::Bool=false, 
-                          seed::Union{Nothing, Int}=nothing) where {N}
-    N = lcm(length(adj_case_path), length(adj_case_name), length(adj_case_ext), 
-            length(vals), length(mean), length(sd), 
-            length(write_file_path), length(write_file_name))
+                          seed::Union{Nothing, Int}=nothing) where {n}
+    args = (adj_case_path, adj_case_name, adj_case_ext, vals, mean, sd, write_file_path, write_file_name)
+    N = get_common_length(args)
+
     adj_case_path = isa(adj_case_path, Union{String, Tuple{String}}) ? match_length(String(adj_case_path), N) : adj_case_path
     adj_case_name = isa(adj_case_name, Union{String, Tuple{String}}) ? match_length(String(adj_case_name), N) : adj_case_name
     adj_case_ext = isa(adj_case_ext, Union{String, Tuple{String}}) ? match_length(String(adj_case_ext), N) : adj_case_ext
@@ -548,9 +548,9 @@ function adj_multi_params(adj_case_path::Union{String, Tuple{String, Vararg{Stri
                           start_x_idx::Int=1, end_x_idx::Int=0, T::Type=Float64, mean::Union{Nothing, Real, Tuple{Real, Vararg{Real}}}=nothing, sd::Union{Nothing, Real, Tuple{Real, Vararg{Real}}}=nothing, 
                           overwrite_file::Bool=false, write_file_path::Union{String, Tuple{String, Vararg{String}}}="", write_file_name::Union{String, Tuple{String, Vararg{String}}}="", only_write_changed_cols::Bool=false, 
                           seed::Union{Nothing, Int}=nothing)
-    N = lcm(length(adj_case_path), length(adj_case_name), length(adj_case_ext), 
-            length(prod_fac), length(add_fac), length(mean), length(sd), 
-            length(write_file_path), length(write_file_name))
+    args = (adj_case_path, adj_case_name, adj_case_ext, prod_fac, add_fac, mean, sd, write_file_path, write_file_name)
+    N = get_common_length(args)
+
     adj_case_path = isa(adj_case_path, Union{String, Tuple{String}}) ? match_length(String(adj_case_path), N) : adj_case_path
     adj_case_name = isa(adj_case_name, Union{String, Tuple{String}}) ? match_length(String(adj_case_name), N) : adj_case_name
     write_file_path = (!overwrite_file & isa(write_file_path, Union{String, Tuple{String}})) ? match_length(String(write_file_path), N) : write_file_path
@@ -577,14 +577,14 @@ function adj_multi_params(adj_case_path::Union{String, Tuple{String, Vararg{Stri
 end
 
 # 8
-function adj_multi_params(adj_case_path::Union{String, Tuple{String, Vararg{String}}}, adj_case_name::Union{String, Tuple{String, Vararg{String}}}, adj_case_ext::NTuple{N, String}, 
-                          P::Union{Bool, Tuple{Bool, Vararg{Bool}}}, Q::Union{Bool, Tuple{Bool, Vararg{Bool}}}, c2::Bool, c1::Bool, c0::Bool, rateA::Bool, vals::Union{VecOrMat{<:Real}, NTuple{N, VecOrMat{<:Real}}}; 
+function adj_multi_params(adj_case_path::Union{String, Tuple{String, Vararg{String}}}, adj_case_name::Union{String, Tuple{String, Vararg{String}}}, adj_case_ext::Tuple{String, Vararg{String}}, 
+                          P::Union{Bool, Tuple{Bool, Vararg{Bool}}}, Q::Union{Bool, Tuple{Bool, Vararg{Bool}}}, c2::Bool, c1::Bool, c0::Bool, rateA::Bool, vals::Union{VecOrMat{<:Real}, NTuple{n, VecOrMat{<:Real}}}; 
                           start_x_idx::Int=1, end_x_idx::Int=0, T::Type=Float64, mean::Union{Nothing, Real, Tuple{Real, Vararg{Real}}}=nothing, sd::Union{Nothing, Real, Tuple{Real, Vararg{Real}}}=nothing, 
                           overwrite_file::Bool=false, write_file_path::Union{String, Tuple{String, Vararg{String}}}="", write_file_name::Union{String, Tuple{String, Vararg{String}}}="", only_write_changed_cols::Bool=false, 
-                          seed::Union{Nothing, Int}=nothing) where {N}
-    N = lcm(length(adj_case_path), length(adj_case_name), length(adj_case_ext), 
-            length(vals), length(mean), length(sd), 
-            length(write_file_path), length(write_file_name))
+                          seed::Union{Nothing, Int}=nothing) where {n}
+    args = (adj_case_path, adj_case_name, adj_case_ext, vals, mean, sd, write_file_path, write_file_name)
+    N = get_common_length(args)
+
     adj_case_path = isa(adj_case_path, Union{String, Tuple{String}}) ? match_length(String(adj_case_path), N) : adj_case_path
     adj_case_name = isa(adj_case_name, Union{String, Tuple{String}}) ? match_length(String(adj_case_name), N) : adj_case_name
     write_file_path = (!overwrite_file & isa(write_file_path, Union{String, NTuple{1, String}})) ? match_length(String(write_file_path), N) : write_file_path
@@ -607,4 +607,19 @@ function adj_multi_params(adj_case_path::Union{String, Tuple{String, Vararg{Stri
         overwrite_file=overwrite_file, write_file_path=write_file_path[idx], write_file_name=write_file_name[idx], 
         only_write_changed_cols=only_write_changed_cols, seed=sub_seeds[idx])
     end
+end
+
+# Helper functions for Adjusting Multiple Parameters
+
+function get_common_length(args::Tuple{Any, Vararg{Any}})
+    arg_array = [arg for arg in args]
+    for idx in 1:length(arg_array)
+        if isa(arg_array[idx], String)
+            arg_array[idx] = (arg_array[idx], )
+        elseif isa(arg_array[idx], Tuple)
+            arg_array[idx] = Tuple(arg_array[idx])
+        end
+    end
+    lengths = map(x -> length(x), arg_array)
+    return lcm(lengths...)
 end
