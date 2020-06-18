@@ -337,7 +337,7 @@ function adj_vals_in_arr(arr::VecOrMat{<:Real}, start_x_idx::Int, y_idx::Union{N
     if isnothing(y_idx)
         return arr
     else
-        vals_length = size(vals, 1)
+        vals_length = size(perturbed_vals, 1)
         arr[start_x_idx : (start_x_idx + vals_length - 1), y_idx] = perturbed_vals
         return arr
     end
