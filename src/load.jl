@@ -108,12 +108,14 @@ function load_case(completed_base_files::Dict, lineOff::Line=Line(); other::Bool
   end
 end
 
+# For loading cases with composing composite files
 function load_case(read_file_path::String, base_file_name::String, aux_file_name::Union{String, NTuple{N, String}}, file_ext::Union{String, NTuple{N, String}}, lineOff::Line=Line(); other::Bool=true, baseMVA::Int=100, T::Type=Float64) where {N}
   base_files = compose_file(read_file_path, base_file_name, aux_file_name, file_ext, T=T)
   completed_base_files = complete_base_files(base_files, read_file_path, base_file_name, T=T)
   return load_case(completed_base_files, lineOff, other=other, baseMVA=baseMVA, T=T)
 end
 
+# For loading cases without composing composite files
 function load_case(case_name::String, case_path::String, lineOff::Line=Line(); other::Bool=true, baseMVA::Int=100, T::Type=Float64)
   case_path = complete_file_path(case_path)
   base_files = Dict{String, Array}()

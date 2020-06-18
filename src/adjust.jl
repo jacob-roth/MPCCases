@@ -272,9 +272,13 @@ end
 
 # Helper Functions for Adjusting Parameters
 
-function generate_vals(arr::VecOrMat{<:Real}, start_x_idx::Int, end_x_idx::Int, y_idx::OrdinalRange{<:Real}, prod_fac::Real, add_fac::Real)
-    subset_arr = arr[start_x_idx:end_x_idx, y_idx]
-    return (prod_fac .* subset_arr) .+ add_fac
+function generate_vals(arr::VecOrMat{<:Real}, start_x_idx::Int, end_x_idx::Int, y_idx::Union{Nothing, OrdinalRange{Int}}, prod_fac::Real, add_fac::Real)
+    if isnothing(y_idx)
+        return arr
+    else
+        subset_arr = arr[start_x_idx:end_x_idx, y_idx]
+        return (prod_fac .* subset_arr) .+ add_fac
+    end
 end
 
 function reshape_vals(vals::VecOrMat{<:Real}, P::Bool, Q::Bool)
@@ -329,19 +333,27 @@ function add_gaussian_noise(vals::VecOrMat{<:Real}, mean::Real, sd::Real, seed::
     return vals + scaled_gaussian_noise
 end
 
-function adj_vals_in_arr(arr::VecOrMat{<:Real}, start_x_idx::Int, y_idx::OrdinalRange{Int}, vals::VecOrMat{<:Real})
-    vals_length = size(vals, 1)
-    arr[start_x_idx : (start_x_idx + vals_length - 1), y_idx] = vals
-    return arr
+function adj_vals_in_arr(arr::VecOrMat{<:Real}, start_x_idx::Int, y_idx::Union{Nothing, OrdinalRange{Int}}, perturbed_vals::VecOrMat{<:Real})
+    if isnothing(y_idx)
+        return arr
+    else
+        vals_length = size(vals, 1)
+        arr[start_x_idx : (start_x_idx + vals_length - 1), y_idx] = perturbed_vals
+        return arr
+    end
 end
 
 # For .gencost, if adjustment in adj_arr is negative, use the values from vals instead
-function undo_neg_vals(adj_arr::VecOrMat{<:Real}, start_x_idx::Int, y_idx::OrdinalRange{Int}, vals::VecOrMat{<:Real})
-    vals_length = size(vals, 1)
-    subset_adj_arr = adj_arr[start_x_idx : (start_x_idx + vals_length - 1), y_idx]
-    discard_neg_vals = subset_adj_arr .* (subset_adj_arr .>= 0) + vals .* (subset_adj_arr .< 0)
-    adj_arr[start_x_idx : (start_x_idx + vals_length - 1), y_idx] = discard_neg_vals
-    return adj_arr
+function undo_neg_vals(adj_arr::VecOrMat{<:Real}, start_x_idx::Int, y_idx::Union{Nothing, OrdinalRange{Int}}, vals::VecOrMat{<:Real})
+    if isnothing(y_idx)
+        return adj_arr
+    else
+        vals_length = size(vals, 1)
+        subset_adj_arr = adj_arr[start_x_idx : (start_x_idx + vals_length - 1), y_idx]
+        discard_neg_vals = subset_adj_arr .* (subset_adj_arr .>= 0) + vals .* (subset_adj_arr .< 0)
+        adj_arr[start_x_idx : (start_x_idx + vals_length - 1), y_idx] = discard_neg_vals
+        return adj_arr
+    end
 end
 
 # Adjusting Parameters for Multiple Cases
