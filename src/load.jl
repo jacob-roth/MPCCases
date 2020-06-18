@@ -117,7 +117,6 @@ end
 
 # For loading cases without composing composite files
 function load_case(case_name::String, case_path::String, lineOff::Line=Line(); other::Bool=true, baseMVA::Int=100, T::Type=Float64)
-  case_path = complete_file_path(case_path)
   base_files = Dict{String, Array}()
   completed_base_files = complete_base_files(base_files, case_path, case_name, T=T)
   return load_case(completed_base_files, lineOff, other=other, baseMVA=baseMVA, T=T)
@@ -311,7 +310,7 @@ function complete_base_files(base_files::Dict{String, Array}, file_path::String,
   file_exts = (".bus", ".branch", ".gen", ".gencost", ".phys")
   for f_ext in file_exts
     if !haskey(base_files, f_ext)
-      base_files[f_ext] = readdlm(file_path * file_name * f_ext, T)
+      base_files[f_ext] = readdlm(complete_file_path(file_path) * file_name * f_ext, T)
     end
   end
   return base_files
