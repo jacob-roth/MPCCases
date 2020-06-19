@@ -272,7 +272,7 @@ end
 
 # Helper Functions for Adjusting Parameters
 
-function generate_vals(arr::VecOrMat{<:Real}, start_x_idx::Int, end_x_idx::Int, y_idx::Union{Nothing, OrdinalRange{Int}}, prod_fac::Real, add_fac::Real)
+function generate_vals(arr::VecOrMat{<:Real}, start_x_idx::Int, end_x_idx::Int, y_idx::Union{Nothing, Vector{Int}}, prod_fac::Real, add_fac::Real)
     if isnothing(y_idx)
         return arr
     else
@@ -333,7 +333,7 @@ function add_gaussian_noise(vals::VecOrMat{<:Real}, mean::Real, sd::Real, seed::
     return vals + scaled_gaussian_noise
 end
 
-function adj_vals_in_arr(arr::VecOrMat{<:Real}, start_x_idx::Int, y_idx::Union{Nothing, OrdinalRange{Int}}, perturbed_vals::VecOrMat{<:Real})
+function adj_vals_in_arr(arr::VecOrMat{<:Real}, start_x_idx::Int, y_idx::Union{Nothing, Vector{Int}}, perturbed_vals::VecOrMat{<:Real})
     if isnothing(y_idx)
         return arr
     else
@@ -344,7 +344,7 @@ function adj_vals_in_arr(arr::VecOrMat{<:Real}, start_x_idx::Int, y_idx::Union{N
 end
 
 # For .gencost, if adjustment in adj_arr is negative, use the values from vals instead
-function undo_neg_vals(adj_arr::VecOrMat{<:Real}, start_x_idx::Int, y_idx::Union{Nothing, OrdinalRange{Int}}, vals::VecOrMat{<:Real})
+function undo_neg_vals(adj_arr::VecOrMat{<:Real}, start_x_idx::Int, y_idx::Union{Nothing, Vector{Int}}, vals::VecOrMat{<:Real})
     if isnothing(y_idx)
         return adj_arr
     else
