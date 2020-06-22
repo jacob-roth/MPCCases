@@ -370,8 +370,12 @@ function adj_multi_params(adj_case_path::Union{String, Tuple{String, Vararg{Stri
     adj_case_path = isa(adj_case_path, String) ? match_length(adj_case_path, N) : isa(adj_case_path, Tuple{String}) ? match_length(String(adj_case_path...), N) : adj_case_path
     adj_case_name = isa(adj_case_name, String) ? match_length(adj_case_name, N) : isa(adj_case_name, Tuple{String}) ? match_length(String(adj_case_name...), N) : adj_case_name
     adj_case_ext = isa(adj_case_ext, String) ? match_length(adj_case_ext, N) : isa(adj_case_ext, Tuple{String}) ? match_length(String(adj_case_ext...), N) : adj_case_ext
-    write_file_path = (!overwrite_file & isa(write_file_path, String)) ? match_length(write_file_path, N) : (!overwrite_file & isa(write_file_path, Tuple{String})) : match_length(String(write_file_path...), N) : write_file_path
-    write_file_name = (!overwrite_file & isa(write_file_name, String)) ? match_length(write_file_name, N) : (!overwrite_file & isa(write_file_name, Tuple{String})) : match_length(String(write_file_name...), N) : write_file_name
+    write_file_path =   (!overwrite_file & isa(write_file_path, String)) ? match_length(write_file_path, N) : 
+                        (!overwrite_file & isa(write_file_path, Tuple{String})) ? match_length(String(write_file_path...), N) : 
+                        write_file_path
+    write_file_name =   (!overwrite_file & isa(write_file_name, String)) ? match_length(write_file_name, N) : 
+                        (!overwrite_file & isa(write_file_name, Tuple{String})) ? match_length(String(write_file_name...), N) : 
+                        write_file_name
 
     p_fac = isa(prod_fac, Union{Real, Tuple{Real}}) ? match_length(prod_fac..., N) : prod_fac
     a_fac = isa(add_fac, Union{Real, Tuple{Real}}) ? match_length(add_fac..., N) : add_fac
@@ -405,8 +409,12 @@ function adj_multi_params(adj_case_path::Union{String, Tuple{String, Vararg{Stri
     adj_case_path = isa(adj_case_path, String) ? match_length(adj_case_path, N) : isa(adj_case_path, Tuple{String}) ? match_length(String(adj_case_path...), N) : adj_case_path
     adj_case_name = isa(adj_case_name, String) ? match_length(adj_case_name, N) : isa(adj_case_name, Tuple{String}) ? match_length(String(adj_case_name...), N) : adj_case_name
     adj_case_ext = isa(adj_case_ext, String) ? match_length(adj_case_ext, N) : isa(adj_case_ext, Tuple{String}) ? match_length(String(adj_case_ext...), N) : adj_case_ext
-    write_file_path = (!overwrite_file & isa(write_file_path, String)) ? match_length(write_file_path, N) : (!overwrite_file & isa(write_file_path, Tuple{String})) : match_length(String(write_file_path...), N) : write_file_path
-    write_file_name = (!overwrite_file & isa(write_file_name, String)) ? match_length(write_file_name, N) : (!overwrite_file & isa(write_file_name, Tuple{String})) : match_length(String(write_file_name...), N) : write_file_name
+    write_file_path =   (!overwrite_file & isa(write_file_path, String)) ? match_length(write_file_path, N) : 
+                        (!overwrite_file & isa(write_file_path, Tuple{String})) ? match_length(String(write_file_path...), N) : 
+                        write_file_path
+    write_file_name =   (!overwrite_file & isa(write_file_name, String)) ? match_length(write_file_name, N) : 
+                        (!overwrite_file & isa(write_file_name, Tuple{String})) ? match_length(String(write_file_name...), N) : 
+                        write_file_name
 
     paste_vals = isa(paste_vals, VecOrMat{<:Real}) ? match_length(paste_vals, N) : isa(paste_vals, Tuple{VecOrMat{<:Real}}) ? match_length(paste_vals..., N) : paste_vals
     m = isa(mean, Union{Real, Tuple{Real}}) ? match_length(mean..., N) : mean
@@ -439,8 +447,12 @@ function adj_multi_params(adj_case_path::Union{String, Tuple{String, Vararg{Stri
     adj_case_path = isa(adj_case_path, String) ? match_length(adj_case_path, N) : isa(adj_case_path, Tuple{String}) ? match_length(String(adj_case_path...), N) : adj_case_path
     adj_case_name = isa(adj_case_name, String) ? match_length(adj_case_name, N) : isa(adj_case_name, Tuple{String}) ? match_length(String(adj_case_name...), N) : adj_case_name
     adj_case_ext = isa(adj_case_ext, String) ? match_length(adj_case_ext, N) : isa(adj_case_ext, Tuple{String}) ? match_length(String(adj_case_ext...), N) : adj_case_ext
-    write_file_path = (!overwrite_file & isa(write_file_path, String)) ? match_length(write_file_path, N) : (!overwrite_file & isa(write_file_path, Tuple{String})) : match_length(String(write_file_path...), N) : write_file_path
-    write_file_name = (!overwrite_file & isa(write_file_name, String)) ? match_length(write_file_name, N) : (!overwrite_file & isa(write_file_name, Tuple{String})) : match_length(String(write_file_name...), N) : write_file_name
+    write_file_path =   (!overwrite_file & isa(write_file_path, String)) ? match_length(write_file_path, N) : 
+                        (!overwrite_file & isa(write_file_path, Tuple{String})) ? match_length(String(write_file_path...), N) : 
+                        write_file_path
+    write_file_name =   (!overwrite_file & isa(write_file_name, String)) ? match_length(write_file_name, N) : 
+                        (!overwrite_file & isa(write_file_name, Tuple{String})) ? match_length(String(write_file_name...), N) : 
+                        write_file_name
 
     p_fac = isa(prod_fac, Union{Real, Tuple{Real}}) ? match_length(prod_fac..., N) : prod_fac
     a_fac = isa(add_fac, Union{Real, Tuple{Real}}) ? match_length(add_fac..., N) : add_fac
@@ -474,8 +486,12 @@ function adj_multi_params(adj_case_path::Union{String, Tuple{String, Vararg{Stri
     adj_case_path = isa(adj_case_path, String) ? match_length(adj_case_path, N) : isa(adj_case_path, Tuple{String}) ? match_length(String(adj_case_path...), N) : adj_case_path
     adj_case_name = isa(adj_case_name, String) ? match_length(adj_case_name, N) : isa(adj_case_name, Tuple{String}) ? match_length(String(adj_case_name...), N) : adj_case_name
     adj_case_ext = isa(adj_case_ext, String) ? match_length(adj_case_ext, N) : isa(adj_case_ext, Tuple{String}) ? match_length(String(adj_case_ext...), N) : adj_case_ext
-    write_file_path = (!overwrite_file & isa(write_file_path, String)) ? match_length(write_file_path, N) : (!overwrite_file & isa(write_file_path, Tuple{String})) : match_length(String(write_file_path...), N) : write_file_path
-    write_file_name = (!overwrite_file & isa(write_file_name, String)) ? match_length(write_file_name, N) : (!overwrite_file & isa(write_file_name, Tuple{String})) : match_length(String(write_file_name...), N) : write_file_name
+    write_file_path =   (!overwrite_file & isa(write_file_path, String)) ? match_length(write_file_path, N) : 
+                        (!overwrite_file & isa(write_file_path, Tuple{String})) ? match_length(String(write_file_path...), N) : 
+                        write_file_path
+    write_file_name =   (!overwrite_file & isa(write_file_name, String)) ? match_length(write_file_name, N) : 
+                        (!overwrite_file & isa(write_file_name, Tuple{String})) ? match_length(String(write_file_name...), N) : 
+                        write_file_name
 
     paste_vals = isa(paste_vals, VecOrMat{<:Real}) ? match_length(paste_vals, N) : isa(paste_vals, Tuple{VecOrMat{<:Real}}) ? match_length(paste_vals..., N) : paste_vals
     m = isa(mean, Union{Real, Tuple{Real}}) ? match_length(mean..., N) : mean
@@ -508,8 +524,12 @@ function adj_multi_params(adj_case_path::Union{String, Tuple{String, Vararg{Stri
     adj_case_path = isa(adj_case_path, String) ? match_length(adj_case_path, N) : isa(adj_case_path, Tuple{String}) ? match_length(String(adj_case_path...), N) : adj_case_path
     adj_case_name = isa(adj_case_name, String) ? match_length(adj_case_name, N) : isa(adj_case_name, Tuple{String}) ? match_length(String(adj_case_name...), N) : adj_case_name
     adj_case_ext = isa(adj_case_ext, String) ? match_length(adj_case_ext, N) : isa(adj_case_ext, Tuple{String}) ? match_length(String(adj_case_ext...), N) : adj_case_ext
-    write_file_path = (!overwrite_file & isa(write_file_path, String)) ? match_length(write_file_path, N) : (!overwrite_file & isa(write_file_path, Tuple{String})) : match_length(String(write_file_path...), N) : write_file_path
-    write_file_name = (!overwrite_file & isa(write_file_name, String)) ? match_length(write_file_name, N) : (!overwrite_file & isa(write_file_name, Tuple{String})) : match_length(String(write_file_name...), N) : write_file_name
+    write_file_path =   (!overwrite_file & isa(write_file_path, String)) ? match_length(write_file_path, N) : 
+                        (!overwrite_file & isa(write_file_path, Tuple{String})) ? match_length(String(write_file_path...), N) : 
+                        write_file_path
+    write_file_name =   (!overwrite_file & isa(write_file_name, String)) ? match_length(write_file_name, N) : 
+                        (!overwrite_file & isa(write_file_name, Tuple{String})) ? match_length(String(write_file_name...), N) : 
+                        write_file_name
 
     p_fac = isa(prod_fac, Union{Real, Tuple{Real}}) ? match_length(prod_fac..., N) : prod_fac
     a_fac = isa(add_fac, Union{Real, Tuple{Real}}) ? match_length(add_fac..., N) : add_fac
@@ -543,8 +563,12 @@ function adj_multi_params(adj_case_path::Union{String, Tuple{String, Vararg{Stri
     adj_case_path = isa(adj_case_path, String) ? match_length(adj_case_path, N) : isa(adj_case_path, Tuple{String}) ? match_length(String(adj_case_path...), N) : adj_case_path
     adj_case_name = isa(adj_case_name, String) ? match_length(adj_case_name, N) : isa(adj_case_name, Tuple{String}) ? match_length(String(adj_case_name...), N) : adj_case_name
     adj_case_ext = isa(adj_case_ext, String) ? match_length(adj_case_ext, N) : isa(adj_case_ext, Tuple{String}) ? match_length(String(adj_case_ext...), N) : adj_case_ext
-    write_file_path = (!overwrite_file & isa(write_file_path, String)) ? match_length(write_file_path, N) : (!overwrite_file & isa(write_file_path, Tuple{String})) : match_length(String(write_file_path...), N) : write_file_path
-    write_file_name = (!overwrite_file & isa(write_file_name, String)) ? match_length(write_file_name, N) : (!overwrite_file & isa(write_file_name, Tuple{String})) : match_length(String(write_file_name...), N) : write_file_name
+    write_file_path =   (!overwrite_file & isa(write_file_path, String)) ? match_length(write_file_path, N) : 
+                        (!overwrite_file & isa(write_file_path, Tuple{String})) ? match_length(String(write_file_path...), N) : 
+                        write_file_path
+    write_file_name =   (!overwrite_file & isa(write_file_name, String)) ? match_length(write_file_name, N) : 
+                        (!overwrite_file & isa(write_file_name, Tuple{String})) ? match_length(String(write_file_name...), N) : 
+                        write_file_name
 
     paste_vals = isa(paste_vals, VecOrMat{<:Real}) ? match_length(paste_vals, N) : isa(paste_vals, Tuple{VecOrMat{<:Real}}) ? match_length(paste_vals..., N) : paste_vals
     m = isa(mean, Union{Real, Tuple{Real}}) ? match_length(mean..., N) : mean
@@ -576,8 +600,12 @@ function adj_multi_params(adj_case_path::Union{String, Tuple{String, Vararg{Stri
 
     adj_case_path = isa(adj_case_path, String) ? match_length(adj_case_path, N) : isa(adj_case_path, Tuple{String}) ? match_length(String(adj_case_path...), N) : adj_case_path
     adj_case_name = isa(adj_case_name, String) ? match_length(adj_case_name, N) : isa(adj_case_name, Tuple{String}) ? match_length(String(adj_case_name...), N) : adj_case_name
-    write_file_path = (!overwrite_file & isa(write_file_path, String)) ? match_length(write_file_path, N) : (!overwrite_file & isa(write_file_path, Tuple{String})) : match_length(String(write_file_path...), N) : write_file_path
-    write_file_name = (!overwrite_file & isa(write_file_name, String)) ? match_length(write_file_name, N) : (!overwrite_file & isa(write_file_name, Tuple{String})) : match_length(String(write_file_name...), N) : write_file_name
+    write_file_path =   (!overwrite_file & isa(write_file_path, String)) ? match_length(write_file_path, N) : 
+                        (!overwrite_file & isa(write_file_path, Tuple{String})) ? match_length(String(write_file_path...), N) : 
+                        write_file_path
+    write_file_name =   (!overwrite_file & isa(write_file_name, String)) ? match_length(write_file_name, N) : 
+                        (!overwrite_file & isa(write_file_name, Tuple{String})) ? match_length(String(write_file_name...), N) : 
+                        write_file_name
 
     p_fac = isa(prod_fac, Union{Real, Tuple{Real}}) ? match_length(prod_fac..., N) : prod_fac
     a_fac = isa(add_fac, Union{Real, Tuple{Real}}) ? match_length(add_fac..., N) : add_fac
@@ -610,8 +638,12 @@ function adj_multi_params(adj_case_path::Union{String, Tuple{String, Vararg{Stri
 
     adj_case_path = isa(adj_case_path, String) ? match_length(adj_case_path, N) : isa(adj_case_path, Tuple{String}) ? match_length(String(adj_case_path...), N) : adj_case_path
     adj_case_name = isa(adj_case_name, String) ? match_length(adj_case_name, N) : isa(adj_case_name, Tuple{String}) ? match_length(String(adj_case_name...), N) : adj_case_name
-    write_file_path = (!overwrite_file & isa(write_file_path, String)) ? match_length(write_file_path, N) : (!overwrite_file & isa(write_file_path, Tuple{String})) : match_length(String(write_file_path...), N) : write_file_path
-    write_file_name = (!overwrite_file & isa(write_file_name, String)) ? match_length(write_file_name, N) : (!overwrite_file & isa(write_file_name, Tuple{String})) : match_length(String(write_file_name...), N) : write_file_name
+    write_file_path =   (!overwrite_file & isa(write_file_path, String)) ? match_length(write_file_path, N) : 
+                        (!overwrite_file & isa(write_file_path, Tuple{String})) ? match_length(String(write_file_path...), N) : 
+                        write_file_path
+    write_file_name =   (!overwrite_file & isa(write_file_name, String)) ? match_length(write_file_name, N) : 
+                        (!overwrite_file & isa(write_file_name, Tuple{String})) ? match_length(String(write_file_name...), N) : 
+                        write_file_name
 
     paste_vals = isa(paste_vals, VecOrMat{<:Real}) ? match_length(paste_vals, N) : isa(paste_vals, Tuple{VecOrMat{<:Real}}) ? match_length(paste_vals..., N) : paste_vals
     m = isa(mean, Union{Real, Tuple{Real}}) ? match_length(mean..., N) : mean
