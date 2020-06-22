@@ -4,9 +4,9 @@ end
 
 function get_y_idx(file_ext::String, P::Bool, Q::Bool)
     if file_ext == ".bus"
-        return P & Q ? (3:4) : P ? (3:3) : Q ? (4:4) : nothing
+        return P & Q ? [3,4] : P ? [3] : Q ? [4] : nothing
     elseif file_ext == ".gen"
-        return P & Q ? (2:3) : P ? (2:2) : Q ? (3:3) : nothing
+        return P & Q ? [2,3] : P ? [2] : Q ? [3] : nothing
     else
         throw(DomainError(file_ext, "file_ext is not properly defined for the number of boolean parameters given."))
     end
@@ -14,7 +14,7 @@ end
 
 function get_y_idx(file_ext::String, c2::Bool, c1::Bool, c0::Bool)
     if file_ext == ".gencost"
-        return c2 & c1 & c0 ? (5:7) : c2 & c1 ? (5:6) : c2 & c0 ? (5:2:7) : c1 & c0 ? (6:7) : c2 ? (5:5) : c1 ? (6:6) : c0 ? (7:7) : nothing
+        return c2 & c1 & c0 ? [5,6,7] : c2 & c1 ? [5,6] : c2 & c0 ? [5,7] : c1 & c0 ? [6,7] : c2 ? [5] : c1 ? [6] : c0 ? [7] : nothing
     else
         throw(DomainError(file_ext, "file_ext is not properly defined for the number of boolean parameters given."))
     end
@@ -22,7 +22,7 @@ end
 
 function get_y_idx(file_ext::String, rateA::Bool)
     if file_ext == ".branch" 
-        return rateA ? (6:6) : nothing
+        return rateA ? [6] : nothing
     else
         throw(DomainError(file_ext, "file_ext is not properly defined for the number of boolean parameters given."))
     end
@@ -59,12 +59,12 @@ function fill_write_file_name(file_name::String, write_file_name::String, overwr
     return filled_write_file_name
 end
 
-function match_length(target::Union{Nothing, String, Real, Array{Real}}, N::Int)
+function match_length(target::Union{Nothing, String, Real, Array{<:Real}}, N::Int)
     return isa(target, Union{Nothing, String, Real}) ? Tuple(repeat([target], N)) : fill(target, N)
 end
 
 function cp_remaining_files(src_path::String, dst_path::String, file_name::String)
-    file_exts = [".bus", ".gen", ".gencost", ".branch", ".phys"]
+    file_exts = (".bus", ".gen", ".gencost", ".branch", ".phys")
     src_file_path = complete_file_path(src_path) * file_name
     dst_file_path = complete_file_path(dst_path) * file_name
     for ext in file_exts

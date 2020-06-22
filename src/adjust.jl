@@ -25,14 +25,14 @@ function adj_params(read_file_path::String, file_name::String, file_ext::String,
 end
 
 # 2: Single file_ext, multi column, block value update for .bus and .gen (P,Q)
-function adj_params(read_file_path::String, file_name::String, file_ext::String,  P::Bool, Q::Bool, vals::VecOrMat{<:Real}; 
+function adj_params(read_file_path::String, file_name::String, file_ext::String,  P::Bool, Q::Bool, paste_vals::VecOrMat{<:Real}; 
                     start_x_idx::Int=1,  T::Type=Float64, mean::Union{Nothing, Real}=nothing, sd::Union{Nothing, Real}=nothing, 
                     overwrite_file::Bool=false, write_file_path::String="", write_file_name::String="", only_write_changed_cols::Bool=false, 
                     seed::Union{Nothing, Int}=nothing)
     read_file_path = complete_file_path(read_file_path)
     arr = readdlm(read_file_path * file_name * file_ext, T)
     y_idx = get_y_idx(file_ext, P, Q)
-    vals = isempty(vals) ? arr[start_x_idx:end, y_idx] : reshape_vals(vals, P, Q)
+    vals = isempty(paste_vals) ? arr[start_x_idx:end, y_idx] : reshape_vals(paste_vals, P, Q)
     perturbed_vals = isnothing(mean) | isnothing(sd) ? vals : add_gaussian_noise(vals, mean, sd, seed)
     adj_arr = adj_vals_in_arr(arr, start_x_idx, y_idx, perturbed_vals)
     filled_write_file_path = fill_write_file_path(write_file_path, read_file_path, overwrite_file, "adj/")
@@ -73,14 +73,14 @@ function adj_params(read_file_path::String, file_name::String, file_ext::String,
 end
 
 # 4: Single file_ext, multi column, block value update for .gencost (c2,c1,c0)
-function adj_params(read_file_path::String, file_name::String, file_ext::String, c2::Bool, c1::Bool, c0::Bool, vals::VecOrMat{<:Real}; 
+function adj_params(read_file_path::String, file_name::String, file_ext::String, c2::Bool, c1::Bool, c0::Bool, paste_vals::VecOrMat{<:Real}; 
                     start_x_idx::Int=1, T::Type=Float64, mean::Union{Nothing, Real}=nothing, sd::Union{Nothing, Real}=nothing, 
                     overwrite_file::Bool=false, write_file_path::String="", write_file_name::String="", only_write_changed_cols::Bool=false, 
                     discard_neg_vals::Bool=true, seed::Union{Nothing, Int}=nothing)
     read_file_path = complete_file_path(read_file_path)
     arr = readdlm(read_file_path * file_name * file_ext, T)
     y_idx = get_y_idx(file_ext, c2, c1, c0)
-    vals = isempty(vals) ? arr[start_x_idx:end, y_idx] : reshape_vals(vals, c2, c1, c0)
+    vals = isempty(paste_vals) ? arr[start_x_idx:end, y_idx] : reshape_vals(paste_vals, c2, c1, c0)
     perturbed_vals = isnothing(mean) | isnothing(sd) ? vals : add_gaussian_noise(vals, mean, sd, seed)
     adj_arr = adj_vals_in_arr(arr, start_x_idx, y_idx, perturbed_vals)
     abs_adj_arr = discard_neg_vals ? undo_neg_vals(adj_arr, start_x_idx, y_idx, vals) : adj_arr
@@ -121,14 +121,14 @@ function adj_params(read_file_path::String, file_name::String, file_ext::String,
 end
 
 # 6: Single file_ext, multi column, block value update for .branch (rateA)
-function adj_params(read_file_path::String, file_name::String, file_ext::String, rateA::Bool, vals::VecOrMat{<:Real};
+function adj_params(read_file_path::String, file_name::String, file_ext::String, rateA::Bool, paste_vals::VecOrMat{<:Real};
                     start_x_idx::Int=1,  T::Type=Float64, mean::Union{Nothing, Real}=nothing, sd::Union{Nothing, Real}=nothing, 
                     overwrite_file::Bool=false, write_file_path::String="", write_file_name::String="", only_write_changed_cols::Bool=false, 
                     seed::Union{Nothing, Int}=nothing)
     read_file_path = complete_file_path(read_file_path)
     arr = readdlm(read_file_path * file_name * file_ext, T)
     y_idx = get_y_idx(file_ext, rateA)
-    vals = isempty(vals) ? arr[start_x_idx:end, y_idx] : reshape_vals(vals, rateA)
+    vals = isempty(paste_vals) ? arr[start_x_idx:end, y_idx] : reshape_vals(paste_vals, rateA)
     perturbed_vals = isnothing(mean) | isnothing(sd) ? vals : add_gaussian_noise(vals, mean, sd, seed)
     adj_arr = adj_vals_in_arr(arr, start_x_idx, y_idx, perturbed_vals)
     filled_write_file_path = fill_write_file_path(write_file_path, read_file_path, overwrite_file, "adj/")
@@ -210,7 +210,7 @@ end
 # 8: Multi file_ext, multi column, varied block value update
 function adj_params(read_file_path::String, file_name::String, file_ext::Union{String, Tuple{String, Vararg{String}}}, 
                     P::Union{Bool, Tuple{Bool, Vararg{Bool}}}, Q::Union{Bool, Tuple{Bool, Vararg{Bool}}}, c2::Bool, c1::Bool, c0::Bool, rateA::Bool,
-                    vals::Union{VecOrMat{<:Real}, Tuple{VecOrMat{<:Real}, Vararg{VecOrMat{<:Real}}}}; 
+                    paste_vals::Union{VecOrMat{<:Real}, Tuple{VecOrMat{<:Real}, Vararg{VecOrMat{<:Real}}}}; 
                     start_x_idx::Int=1, T::Type=Float64, mean::Union{Nothing, Real, Tuple{Real, Vararg{Real}}}=nothing, sd::Union{Nothing, Real, Tuple{Real, Vararg{Real}}}=nothing,
                     overwrite_file::Bool=false, write_file_path::String="", write_file_name::String="", only_write_changed_cols::Bool=false, 
                     discard_neg_vals::Bool=true, seed::Union{Nothing, Int}=nothing)
@@ -221,21 +221,21 @@ function adj_params(read_file_path::String, file_name::String, file_ext::Union{S
             f_ext = file_ext[idx]
             m = isnothing(mean) | isa(mean..., Real) ? Real(mean...) : mean[idx]
             s = isnothing(sd) | isa(sd..., Real) ? Real(sd...) : sd[idx]
-            val = isa(vals..., VecOrMat{Real}) ? Array(vals...) : vals[idx]
+            paste_val = isa(paste_vals..., VecOrMat{Real}) ? Array(paste_vals...) : paste_vals[idx]
             if f_ext in [".bus", ".gen"]
                 PQ_idx = findfirst(x -> x == f_ext, PQ_file_ext)
                 p, q = P[PQ_idx], Q[PQ_idx]
-                adj_params(read_file_path, file_name, f_ext, p, q, val, 
+                adj_params(read_file_path, file_name, f_ext, p, q, paste_val, 
                            start_x_idx=start_x_idx, T=T, mean=m, sd=s, 
                            overwrite_file=overwrite_file, write_file_path=write_file_path, write_file_name=write_file_name, 
                            only_write_changed_cols=only_write_changed_cols, seed=seed)
             elseif f_ext == ".gencost"
-                adj_params(read_file_path, file_name, f_ext, c2, c1, c0, val, 
+                adj_params(read_file_path, file_name, f_ext, c2, c1, c0, paste_val, 
                            start_x_idx=start_x_idx, T=T, mean=m, sd=s, 
                            overwrite_file=overwrite_file, write_file_path=write_file_path, write_file_name=write_file_name, 
                            only_write_changed_cols=only_write_changed_cols, discard_neg_vals=discard_neg_vals, seed=seed)
             elseif f_ext == ".branch"
-                adj_params(read_file_path, file_name, f_ext, rateA, val, 
+                adj_params(read_file_path, file_name, f_ext, rateA, paste_val, 
                            start_x_idx=start_x_idx, T=T, mean=m, sd=s, 
                            overwrite_file=overwrite_file, write_file_path=write_file_path, write_file_name=write_file_name, 
                            only_write_changed_cols=only_write_changed_cols, seed=seed)
@@ -244,23 +244,23 @@ function adj_params(read_file_path::String, file_name::String, file_ext::Union{S
             end
         end
     else
-        @assert isa(P..., Bool) & isa(Q..., Bool) & isa(vals..., VecOrMat{Real}) & 
+        @assert isa(P..., Bool) & isa(Q..., Bool) & isa(paste_vals..., VecOrMat{Real}) & 
                 isa(mean..., Union{Nothing, Real}) & isa(sd..., Union{Nothing, Real})
-        p, q, val = Bool(P...), Bool(Q...), Array(vals...)
+        p, q, paste_val = Bool(P...), Bool(Q...), Array(paste_vals...)
         m = isa(mean..., Real) ? Real(mean...) : nothing
         s = isa(sd..., Real) ? Real(sd...) : nothing
         if file_ext in [".bus", ".gen"]
-            adj_params(read_file_path, file_name, file_ext, p, q, val, 
+            adj_params(read_file_path, file_name, file_ext, p, q, paste_val, 
                        start_x_idx=start_x_idx, T=T, mean=m, sd=s, 
                        overwrite_file=overwrite_file, write_file_path=write_file_path, write_file_name=write_file_name, 
                        only_write_changed_cols=only_write_changed_cols, seed=seed)
         elseif file_ext == ".gencost"
-            adj_params(read_file_path, file_name, file_ext, c2, c1, c0, val, 
+            adj_params(read_file_path, file_name, file_ext, c2, c1, c0, paste_val, 
                        start_x_idx=start_x_idx, T=T, mean=m, sd=s, 
                        overwrite_file=overwrite_file, write_file_path=write_file_path, write_file_name=write_file_name, 
                        only_write_changed_cols=only_write_changed_cols, discard_neg_vals=discard_neg_vals, seed=seed)
         elseif file_ext == ".branch"
-            adj_params(read_file_path, file_name, file_ext, rateA, val, 
+            adj_params(read_file_path, file_name, file_ext, rateA, paste_val, 
                        start_x_idx=start_x_idx, T=T, mean=m, sd=s, 
                        overwrite_file=overwrite_file, write_file_path=write_file_path, write_file_name=write_file_name, 
                        only_write_changed_cols=only_write_changed_cols, seed=seed)
@@ -272,7 +272,7 @@ end
 
 # Helper Functions for Adjusting Parameters
 
-function generate_vals(arr::VecOrMat{<:Real}, start_x_idx::Int, end_x_idx::Int, y_idx::Union{Nothing, OrdinalRange{Int}}, prod_fac::Real, add_fac::Real)
+function generate_vals(arr::VecOrMat{<:Real}, start_x_idx::Int, end_x_idx::Int, y_idx::Union{Nothing, Vector{Int}}, prod_fac::Real, add_fac::Real)
     if isnothing(y_idx)
         return arr
     else
@@ -281,14 +281,14 @@ function generate_vals(arr::VecOrMat{<:Real}, start_x_idx::Int, end_x_idx::Int, 
     end
 end
 
-function reshape_vals(vals::VecOrMat{<:Real}, P::Bool, Q::Bool)
-    if size(vals, 2) == P + Q
-        return vals
-    elseif size(vals, 2) == 1
+function reshape_vals(paste_vals::VecOrMat{<:Real}, P::Bool, Q::Bool)
+    if size(paste_vals, 2) == P + Q
+        return paste_vals
+    elseif size(paste_vals, 2) == 1
         if P & Q
-            return reshape(vals, :, 2)
+            return reshape(paste_vals, :, 2)
         elseif P | Q
-            return reshape(vals, :, 1)
+            return reshape(paste_vals, :, 1)
         else
             throw(DomainError("vals is not properly defined for the number of boolean parameters given."))
         end
@@ -297,16 +297,16 @@ function reshape_vals(vals::VecOrMat{<:Real}, P::Bool, Q::Bool)
     end
 end
 
-function reshape_vals(vals::VecOrMat{<:Real}, c2::Bool, c1::Bool, c0::Bool)
-    if size(vals, 2) == c2 + c1 + c0
-        return vals
-    elseif size(vals, 2) == 1
+function reshape_vals(paste_vals::VecOrMat{<:Real}, c2::Bool, c1::Bool, c0::Bool)
+    if size(paste_vals, 2) == c2 + c1 + c0
+        return paste_vals
+    elseif size(paste_vals, 2) == 1
         if c2 & c1 & c0
-            return reshape(vals, :, 3)
+            return reshape(paste_vals, :, 3)
         elseif (c2 & c1) | (c2 & c0) | (c1 & c0)
-            return reshape(vals, :, 2)
+            return reshape(paste_vals, :, 2)
         elseif c2 | c1 | c0
-            return reshape(vals, :, 1)
+            return reshape(paste_vals, :, 1)
         else
             throw(DomainError("vals is not properly defined for the number of boolean parameters given."))
         end
@@ -333,7 +333,7 @@ function add_gaussian_noise(vals::VecOrMat{<:Real}, mean::Real, sd::Real, seed::
     return vals + scaled_gaussian_noise
 end
 
-function adj_vals_in_arr(arr::VecOrMat{<:Real}, start_x_idx::Int, y_idx::Union{Nothing, OrdinalRange{Int}}, perturbed_vals::VecOrMat{<:Real})
+function adj_vals_in_arr(arr::VecOrMat{<:Real}, start_x_idx::Int, y_idx::Union{Nothing, Vector{Int}}, perturbed_vals::VecOrMat{<:Real})
     if isnothing(y_idx)
         return arr
     else
@@ -344,7 +344,7 @@ function adj_vals_in_arr(arr::VecOrMat{<:Real}, start_x_idx::Int, y_idx::Union{N
 end
 
 # For .gencost, if adjustment in adj_arr is negative, use the values from vals instead
-function undo_neg_vals(adj_arr::VecOrMat{<:Real}, start_x_idx::Int, y_idx::Union{Nothing, OrdinalRange{Int}}, vals::VecOrMat{<:Real})
+function undo_neg_vals(adj_arr::VecOrMat{<:Real}, start_x_idx::Int, y_idx::Union{Nothing, Vector{Int}}, vals::VecOrMat{<:Real})
     if isnothing(y_idx)
         return adj_arr
     else
@@ -367,11 +367,15 @@ function adj_multi_params(adj_case_path::Union{String, Tuple{String, Vararg{Stri
     args = (adj_case_path, adj_case_name, adj_case_ext, prod_fac, add_fac, mean, sd, write_file_path, write_file_name)
     N = get_common_length(args)
 
-    adj_case_path = isa(adj_case_path, Union{String, Tuple{String}}) ? match_length(String(adj_case_path), N) : adj_case_path
-    adj_case_name = isa(adj_case_name, Union{String, Tuple{String}}) ? match_length(String(adj_case_name), N) : adj_case_name
-    adj_case_ext = isa(adj_case_ext, Union{String, Tuple{String}}) ? match_length(String(adj_case_ext), N) : adj_case_ext
-    write_file_path = (!overwrite_file & isa(write_file_path, Union{String, Tuple{String}})) ? match_length(String(write_file_path), N) : write_file_path
-    write_file_name = (!overwrite_file & isa(write_file_name, Union{String, Tuple{String}})) ? match_length(String(write_file_name), N) : write_file_name
+    adj_case_path = isa(adj_case_path, String) ? match_length(adj_case_path, N) : isa(adj_case_path, Tuple{String}) ? match_length(String(adj_case_path...), N) : adj_case_path
+    adj_case_name = isa(adj_case_name, String) ? match_length(adj_case_name, N) : isa(adj_case_name, Tuple{String}) ? match_length(String(adj_case_name...), N) : adj_case_name
+    adj_case_ext = isa(adj_case_ext, String) ? match_length(adj_case_ext, N) : isa(adj_case_ext, Tuple{String}) ? match_length(String(adj_case_ext...), N) : adj_case_ext
+    write_file_path =   (!overwrite_file & isa(write_file_path, String)) ? match_length(write_file_path, N) : 
+                        (!overwrite_file & isa(write_file_path, Tuple{String})) ? match_length(String(write_file_path...), N) : 
+                        write_file_path
+    write_file_name =   (!overwrite_file & isa(write_file_name, String)) ? match_length(write_file_name, N) : 
+                        (!overwrite_file & isa(write_file_name, Tuple{String})) ? match_length(String(write_file_name...), N) : 
+                        write_file_name
 
     p_fac = isa(prod_fac, Union{Real, Tuple{Real}}) ? match_length(prod_fac..., N) : prod_fac
     a_fac = isa(add_fac, Union{Real, Tuple{Real}}) ? match_length(add_fac..., N) : add_fac
@@ -395,20 +399,24 @@ end
 
 # 2
 function adj_multi_params(adj_case_path::Union{String, Tuple{String, Vararg{String}}}, adj_case_name::Union{String, Tuple{String, Vararg{String}}}, adj_case_ext::Union{String, Tuple{String, Vararg{String}}}, 
-                          P::Bool, Q::Bool, vals::Union{VecOrMat{<:Real}, NTuple{n, VecOrMat{<:Real}}}; 
-                          start_x_idx::Int=1, end_x_idx::Int=0, T::Type=Float64, mean::Union{Nothing, Real, Tuple{Real, Vararg{Real}}}=nothing, sd::Union{Nothing, Real, Tuple{Real, Vararg{Real}}}=nothing, 
+                          P::Bool, Q::Bool, paste_vals::Union{VecOrMat{<:Real}, NTuple{n, VecOrMat{<:Real}}}; 
+                          start_x_idx::Int=1, T::Type=Float64, mean::Union{Nothing, Real, Tuple{Real, Vararg{Real}}}=nothing, sd::Union{Nothing, Real, Tuple{Real, Vararg{Real}}}=nothing, 
                           overwrite_file::Bool=false, write_file_path::Union{String, Tuple{String, Vararg{String}}}="", write_file_name::Union{String, Tuple{String, Vararg{String}}}="", only_write_changed_cols::Bool=false, 
                           seed::Union{Nothing, Int}=nothing) where {n}
-    args = (adj_case_path, adj_case_name, adj_case_ext, vals, mean, sd, write_file_path, write_file_name)
+    args = (adj_case_path, adj_case_name, adj_case_ext, paste_vals, mean, sd, write_file_path, write_file_name)
     N = get_common_length(args)
 
-    adj_case_path = isa(adj_case_path, Union{String, Tuple{String}}) ? match_length(String(adj_case_path), N) : adj_case_path
-    adj_case_name = isa(adj_case_name, Union{String, Tuple{String}}) ? match_length(String(adj_case_name), N) : adj_case_name
-    adj_case_ext = isa(adj_case_ext, Union{String, Tuple{String}}) ? match_length(String(adj_case_ext), N) : adj_case_ext
-    write_file_path = (!overwrite_file & isa(write_file_path, Union{String, Tuple{String}})) ? match_length(String(write_file_path), N) : write_file_path
-    write_file_name = (!overwrite_file & isa(write_file_name, Union{String, Tuple{String}})) ? match_length(String(write_file_name), N) : write_file_name
+    adj_case_path = isa(adj_case_path, String) ? match_length(adj_case_path, N) : isa(adj_case_path, Tuple{String}) ? match_length(String(adj_case_path...), N) : adj_case_path
+    adj_case_name = isa(adj_case_name, String) ? match_length(adj_case_name, N) : isa(adj_case_name, Tuple{String}) ? match_length(String(adj_case_name...), N) : adj_case_name
+    adj_case_ext = isa(adj_case_ext, String) ? match_length(adj_case_ext, N) : isa(adj_case_ext, Tuple{String}) ? match_length(String(adj_case_ext...), N) : adj_case_ext
+    write_file_path =   (!overwrite_file & isa(write_file_path, String)) ? match_length(write_file_path, N) : 
+                        (!overwrite_file & isa(write_file_path, Tuple{String})) ? match_length(String(write_file_path...), N) : 
+                        write_file_path
+    write_file_name =   (!overwrite_file & isa(write_file_name, String)) ? match_length(write_file_name, N) : 
+                        (!overwrite_file & isa(write_file_name, Tuple{String})) ? match_length(String(write_file_name...), N) : 
+                        write_file_name
 
-    val = isa(vals, Union{VecOrMat{<:Real}, Tuple{VecOrMat{<:Real}}}) ? match_length(vals..., N) : vals
+    paste_vals = isa(paste_vals, VecOrMat{<:Real}) ? match_length(paste_vals, N) : isa(paste_vals, Tuple{VecOrMat{<:Real}}) ? match_length(paste_vals..., N) : paste_vals
     m = isa(mean, Union{Real, Tuple{Real}}) ? match_length(mean..., N) : mean
     s = isa(sd, Union{Real, Tuple{Real}}) ? match_length(sd..., N) : sd
 
@@ -417,11 +425,11 @@ function adj_multi_params(adj_case_path::Union{String, Tuple{String, Vararg{Stri
 
     @assert length(adj_case_path) == length(adj_case_name) == length(adj_case_ext) == 
             length(write_file_path) == length(write_file_name) ==
-            length(val) == length(m) == length(s) == length(sub_seeds)
+            length(paste_vals) == length(m) == length(s) == length(sub_seeds)
 
     for idx in 1:N
-        adj_params(adj_case_path[idx], adj_case_name[idx], adj_case_ext[idx], P, Q, val[idx], 
-        start_x_idx=start_x_idx, end_x_idx=end_x_idx, T=T, mean=m[idx], sd=s[idx], 
+        adj_params(adj_case_path[idx], adj_case_name[idx], adj_case_ext[idx], P, Q, paste_vals[idx], 
+        start_x_idx=start_x_idx, T=T, mean=m[idx], sd=s[idx], 
         overwrite_file=overwrite_file, write_file_path=write_file_path[idx], write_file_name=write_file_name[idx], 
         only_write_changed_cols=only_write_changed_cols, seed=sub_seeds[idx])
     end
@@ -436,11 +444,15 @@ function adj_multi_params(adj_case_path::Union{String, Tuple{String, Vararg{Stri
     args = (adj_case_path, adj_case_name, adj_case_ext, prod_fac, add_fac, mean, sd, write_file_path, write_file_name)
     N = get_common_length(args)
 
-    adj_case_path = isa(adj_case_path, Union{String, Tuple{String}}) ? match_length(String(adj_case_path), N) : adj_case_path
-    adj_case_name = isa(adj_case_name, Union{String, Tuple{String}}) ? match_length(String(adj_case_name), N) : adj_case_name
-    adj_case_ext = isa(adj_case_ext, Union{String, Tuple{String}}) ? match_length(String(adj_case_ext), N) : adj_case_ext
-    write_file_path = (!overwrite_file & isa(write_file_path, Union{String, Tuple{String}})) ? match_length(String(write_file_path), N) : write_file_path
-    write_file_name = (!overwrite_file & isa(write_file_name, Union{String, Tuple{String}})) ? match_length(String(write_file_name), N) : write_file_name
+    adj_case_path = isa(adj_case_path, String) ? match_length(adj_case_path, N) : isa(adj_case_path, Tuple{String}) ? match_length(String(adj_case_path...), N) : adj_case_path
+    adj_case_name = isa(adj_case_name, String) ? match_length(adj_case_name, N) : isa(adj_case_name, Tuple{String}) ? match_length(String(adj_case_name...), N) : adj_case_name
+    adj_case_ext = isa(adj_case_ext, String) ? match_length(adj_case_ext, N) : isa(adj_case_ext, Tuple{String}) ? match_length(String(adj_case_ext...), N) : adj_case_ext
+    write_file_path =   (!overwrite_file & isa(write_file_path, String)) ? match_length(write_file_path, N) : 
+                        (!overwrite_file & isa(write_file_path, Tuple{String})) ? match_length(String(write_file_path...), N) : 
+                        write_file_path
+    write_file_name =   (!overwrite_file & isa(write_file_name, String)) ? match_length(write_file_name, N) : 
+                        (!overwrite_file & isa(write_file_name, Tuple{String})) ? match_length(String(write_file_name...), N) : 
+                        write_file_name
 
     p_fac = isa(prod_fac, Union{Real, Tuple{Real}}) ? match_length(prod_fac..., N) : prod_fac
     a_fac = isa(add_fac, Union{Real, Tuple{Real}}) ? match_length(add_fac..., N) : add_fac
@@ -464,20 +476,24 @@ end
 
 # 4
 function adj_multi_params(adj_case_path::Union{String, Tuple{String, Vararg{String}}}, adj_case_name::Union{String, Tuple{String, Vararg{String}}}, adj_case_ext::Union{String, Tuple{String, Vararg{String}}}, 
-                          c2::Bool, c1::Bool, c0::Bool, vals::Union{VecOrMat{<:Real}, NTuple{n, VecOrMat{<:Real}}}; 
-                          start_x_idx::Int=1, end_x_idx::Int=0, T::Type=Float64, mean::Union{Nothing, Real, Tuple{Real, Vararg{Real}}}=nothing, sd::Union{Nothing, Real, Tuple{Real, Vararg{Real}}}=nothing, 
+                          c2::Bool, c1::Bool, c0::Bool, paste_vals::Union{VecOrMat{<:Real}, NTuple{n, VecOrMat{<:Real}}}; 
+                          start_x_idx::Int=1, T::Type=Float64, mean::Union{Nothing, Real, Tuple{Real, Vararg{Real}}}=nothing, sd::Union{Nothing, Real, Tuple{Real, Vararg{Real}}}=nothing, 
                           overwrite_file::Bool=false, write_file_path::Union{String, Tuple{String, Vararg{String}}}="", write_file_name::Union{String, Tuple{String, Vararg{String}}}="", only_write_changed_cols::Bool=false, 
                           discard_neg_vals::Bool=true, seed::Union{Nothing, Int}=nothing) where {n}
-    args = (adj_case_path, adj_case_name, adj_case_ext, vals, mean, sd, write_file_path, write_file_name)
+    args = (adj_case_path, adj_case_name, adj_case_ext, paste_vals, mean, sd, write_file_path, write_file_name)
     N = get_common_length(args)
 
-    adj_case_path = isa(adj_case_path, Union{String, Tuple{String}}) ? match_length(String(adj_case_path), N) : adj_case_path
-    adj_case_name = isa(adj_case_name, Union{String, Tuple{String}}) ? match_length(String(adj_case_name), N) : adj_case_name
-    adj_case_ext = isa(adj_case_ext, Union{String, Tuple{String}}) ? match_length(String(adj_case_ext), N) : adj_case_ext
-    write_file_path = (!overwrite_file & isa(write_file_path, Union{String, Tuple{String}})) ? match_length(String(write_file_path), N) : write_file_path
-    write_file_name = (!overwrite_file & isa(write_file_name, Union{String, Tuple{String}})) ? match_length(String(write_file_name), N) : write_file_name
+    adj_case_path = isa(adj_case_path, String) ? match_length(adj_case_path, N) : isa(adj_case_path, Tuple{String}) ? match_length(String(adj_case_path...), N) : adj_case_path
+    adj_case_name = isa(adj_case_name, String) ? match_length(adj_case_name, N) : isa(adj_case_name, Tuple{String}) ? match_length(String(adj_case_name...), N) : adj_case_name
+    adj_case_ext = isa(adj_case_ext, String) ? match_length(adj_case_ext, N) : isa(adj_case_ext, Tuple{String}) ? match_length(String(adj_case_ext...), N) : adj_case_ext
+    write_file_path =   (!overwrite_file & isa(write_file_path, String)) ? match_length(write_file_path, N) : 
+                        (!overwrite_file & isa(write_file_path, Tuple{String})) ? match_length(String(write_file_path...), N) : 
+                        write_file_path
+    write_file_name =   (!overwrite_file & isa(write_file_name, String)) ? match_length(write_file_name, N) : 
+                        (!overwrite_file & isa(write_file_name, Tuple{String})) ? match_length(String(write_file_name...), N) : 
+                        write_file_name
 
-    val = isa(vals, Union{VecOrMat{<:Real}, Tuple{VecOrMat{<:Real}}}) ? match_length(vals..., N) : vals
+    paste_vals = isa(paste_vals, VecOrMat{<:Real}) ? match_length(paste_vals, N) : isa(paste_vals, Tuple{VecOrMat{<:Real}}) ? match_length(paste_vals..., N) : paste_vals
     m = isa(mean, Union{Real, Tuple{Real}}) ? match_length(mean..., N) : mean
     s = isa(sd, Union{Real, Tuple{Real}}) ? match_length(sd..., N) : sd
 
@@ -486,11 +502,11 @@ function adj_multi_params(adj_case_path::Union{String, Tuple{String, Vararg{Stri
 
     @assert length(adj_case_path) == length(adj_case_name) == length(adj_case_ext) == 
             length(write_file_path) == length(write_file_name) ==
-            length(val) == length(m) == length(s) == length(sub_seeds)
+            length(paste_vals) == length(m) == length(s) == length(sub_seeds)
 
     for idx in 1:N
-        adj_params(adj_case_path[idx], adj_case_name[idx], adj_case_ext[idx], c2, c1, c0, val[idx], 
-        start_x_idx=start_x_idx, end_x_idx=end_x_idx, T=T, mean=m[idx], sd=s[idx], 
+        adj_params(adj_case_path[idx], adj_case_name[idx], adj_case_ext[idx], c2, c1, c0, paste_vals[idx], 
+        start_x_idx=start_x_idx, T=T, mean=m[idx], sd=s[idx], 
         overwrite_file=overwrite_file, write_file_path=write_file_path[idx], write_file_name=write_file_name[idx], 
         only_write_changed_cols=only_write_changed_cols, discard_neg_vals=discard_neg_vals, seed=sub_seeds[idx])
     end
@@ -505,11 +521,15 @@ function adj_multi_params(adj_case_path::Union{String, Tuple{String, Vararg{Stri
     args = (adj_case_path, adj_case_name, adj_case_ext, prod_fac, add_fac, mean, sd, write_file_path, write_file_name)
     N = get_common_length(args)
 
-    adj_case_path = isa(adj_case_path, Union{String, Tuple{String}}) ? match_length(String(adj_case_path), N) : adj_case_path
-    adj_case_name = isa(adj_case_name, Union{String, Tuple{String}}) ? match_length(String(adj_case_name), N) : adj_case_name
-    adj_case_ext = isa(adj_case_ext, Union{String, Tuple{String}}) ? match_length(String(adj_case_ext), N) : adj_case_ext
-    write_file_path = (!overwrite_file & isa(write_file_path, Union{String, Tuple{String}})) ? match_length(String(write_file_path), N) : write_file_path
-    write_file_name = (!overwrite_file & isa(write_file_name, Union{String, Tuple{String}})) ? match_length(String(write_file_name), N) : write_file_name
+    adj_case_path = isa(adj_case_path, String) ? match_length(adj_case_path, N) : isa(adj_case_path, Tuple{String}) ? match_length(String(adj_case_path...), N) : adj_case_path
+    adj_case_name = isa(adj_case_name, String) ? match_length(adj_case_name, N) : isa(adj_case_name, Tuple{String}) ? match_length(String(adj_case_name...), N) : adj_case_name
+    adj_case_ext = isa(adj_case_ext, String) ? match_length(adj_case_ext, N) : isa(adj_case_ext, Tuple{String}) ? match_length(String(adj_case_ext...), N) : adj_case_ext
+    write_file_path =   (!overwrite_file & isa(write_file_path, String)) ? match_length(write_file_path, N) : 
+                        (!overwrite_file & isa(write_file_path, Tuple{String})) ? match_length(String(write_file_path...), N) : 
+                        write_file_path
+    write_file_name =   (!overwrite_file & isa(write_file_name, String)) ? match_length(write_file_name, N) : 
+                        (!overwrite_file & isa(write_file_name, Tuple{String})) ? match_length(String(write_file_name...), N) : 
+                        write_file_name
 
     p_fac = isa(prod_fac, Union{Real, Tuple{Real}}) ? match_length(prod_fac..., N) : prod_fac
     a_fac = isa(add_fac, Union{Real, Tuple{Real}}) ? match_length(add_fac..., N) : add_fac
@@ -533,20 +553,24 @@ end
 
 # 6
 function adj_multi_params(adj_case_path::Union{String, Tuple{String, Vararg{String}}}, adj_case_name::Union{String, Tuple{String, Vararg{String}}}, adj_case_ext::Union{String, Tuple{String, Vararg{String}}}, 
-                          rateA::Bool, vals::Union{VecOrMat{<:Real}, NTuple{n, VecOrMat{<:Real}}}; 
-                          start_x_idx::Int=1, end_x_idx::Int=0, T::Type=Float64, mean::Union{Nothing, Real, Tuple{Real, Vararg{Real}}}=nothing, sd::Union{Nothing, Real, Tuple{Real, Vararg{Real}}}=nothing, 
+                          rateA::Bool, paste_vals::Union{VecOrMat{<:Real}, NTuple{n, VecOrMat{<:Real}}}; 
+                          start_x_idx::Int=1, T::Type=Float64, mean::Union{Nothing, Real, Tuple{Real, Vararg{Real}}}=nothing, sd::Union{Nothing, Real, Tuple{Real, Vararg{Real}}}=nothing, 
                           overwrite_file::Bool=false, write_file_path::Union{String, Tuple{String, Vararg{String}}}="", write_file_name::Union{String, Tuple{String, Vararg{String}}}="", only_write_changed_cols::Bool=false, 
                           seed::Union{Nothing, Int}=nothing) where {n}
-    args = (adj_case_path, adj_case_name, adj_case_ext, vals, mean, sd, write_file_path, write_file_name)
+    args = (adj_case_path, adj_case_name, adj_case_ext, paste_vals, mean, sd, write_file_path, write_file_name)
     N = get_common_length(args)
 
-    adj_case_path = isa(adj_case_path, Union{String, Tuple{String}}) ? match_length(String(adj_case_path), N) : adj_case_path
-    adj_case_name = isa(adj_case_name, Union{String, Tuple{String}}) ? match_length(String(adj_case_name), N) : adj_case_name
-    adj_case_ext = isa(adj_case_ext, Union{String, Tuple{String}}) ? match_length(String(adj_case_ext), N) : adj_case_ext
-    write_file_path = (!overwrite_file & isa(write_file_path, Union{String, Tuple{String}})) ? match_length(String(write_file_path), N) : write_file_path
-    write_file_name = (!overwrite_file & isa(write_file_name, Union{String, Tuple{String}})) ? match_length(String(write_file_name), N) : write_file_name
+    adj_case_path = isa(adj_case_path, String) ? match_length(adj_case_path, N) : isa(adj_case_path, Tuple{String}) ? match_length(String(adj_case_path...), N) : adj_case_path
+    adj_case_name = isa(adj_case_name, String) ? match_length(adj_case_name, N) : isa(adj_case_name, Tuple{String}) ? match_length(String(adj_case_name...), N) : adj_case_name
+    adj_case_ext = isa(adj_case_ext, String) ? match_length(adj_case_ext, N) : isa(adj_case_ext, Tuple{String}) ? match_length(String(adj_case_ext...), N) : adj_case_ext
+    write_file_path =   (!overwrite_file & isa(write_file_path, String)) ? match_length(write_file_path, N) : 
+                        (!overwrite_file & isa(write_file_path, Tuple{String})) ? match_length(String(write_file_path...), N) : 
+                        write_file_path
+    write_file_name =   (!overwrite_file & isa(write_file_name, String)) ? match_length(write_file_name, N) : 
+                        (!overwrite_file & isa(write_file_name, Tuple{String})) ? match_length(String(write_file_name...), N) : 
+                        write_file_name
 
-    val = isa(vals, Union{VecOrMat{<:Real}, Tuple{VecOrMat{<:Real}}}) ? match_length(vals..., N) : vals
+    paste_vals = isa(paste_vals, VecOrMat{<:Real}) ? match_length(paste_vals, N) : isa(paste_vals, Tuple{VecOrMat{<:Real}}) ? match_length(paste_vals..., N) : paste_vals
     m = isa(mean, Union{Real, Tuple{Real}}) ? match_length(mean..., N) : mean
     s = isa(sd, Union{Real, Tuple{Real}}) ? match_length(sd..., N) : sd
 
@@ -555,11 +579,11 @@ function adj_multi_params(adj_case_path::Union{String, Tuple{String, Vararg{Stri
 
     @assert length(adj_case_path) == length(adj_case_name) == length(adj_case_ext) == 
             length(write_file_path) == length(write_file_name) ==
-            length(val) == length(m) == length(s) == length(sub_seeds)
+            length(paste_vals) == length(m) == length(s) == length(sub_seeds)
 
     for idx in 1:N
-        adj_params(adj_case_path[idx], adj_case_name[idx], adj_case_ext[idx], rateA, val[idx], 
-        start_x_idx=start_x_idx, end_x_idx=end_x_idx, T=T, mean=m[idx], sd=s[idx], 
+        adj_params(adj_case_path[idx], adj_case_name[idx], adj_case_ext[idx], rateA, paste_vals[idx], 
+        start_x_idx=start_x_idx, T=T, mean=m[idx], sd=s[idx], 
         overwrite_file=overwrite_file, write_file_path=write_file_path[idx], write_file_name=write_file_name[idx], 
         only_write_changed_cols=only_write_changed_cols, seed=sub_seeds[idx])
     end
@@ -574,10 +598,14 @@ function adj_multi_params(adj_case_path::Union{String, Tuple{String, Vararg{Stri
     args = (adj_case_path, adj_case_name, adj_case_ext, prod_fac, add_fac, mean, sd, write_file_path, write_file_name)
     N = get_common_length(args)
 
-    adj_case_path = isa(adj_case_path, Union{String, Tuple{String}}) ? match_length(String(adj_case_path), N) : adj_case_path
-    adj_case_name = isa(adj_case_name, Union{String, Tuple{String}}) ? match_length(String(adj_case_name), N) : adj_case_name
-    write_file_path = (!overwrite_file & isa(write_file_path, Union{String, Tuple{String}})) ? match_length(String(write_file_path), N) : write_file_path
-    write_file_name = (!overwrite_file & isa(write_file_name, Union{String, Tuple{String}})) ? match_length(String(write_file_name), N) : write_file_name
+    adj_case_path = isa(adj_case_path, String) ? match_length(adj_case_path, N) : isa(adj_case_path, Tuple{String}) ? match_length(String(adj_case_path...), N) : adj_case_path
+    adj_case_name = isa(adj_case_name, String) ? match_length(adj_case_name, N) : isa(adj_case_name, Tuple{String}) ? match_length(String(adj_case_name...), N) : adj_case_name
+    write_file_path =   (!overwrite_file & isa(write_file_path, String)) ? match_length(write_file_path, N) : 
+                        (!overwrite_file & isa(write_file_path, Tuple{String})) ? match_length(String(write_file_path...), N) : 
+                        write_file_path
+    write_file_name =   (!overwrite_file & isa(write_file_name, String)) ? match_length(write_file_name, N) : 
+                        (!overwrite_file & isa(write_file_name, Tuple{String})) ? match_length(String(write_file_name...), N) : 
+                        write_file_name
 
     p_fac = isa(prod_fac, Union{Real, Tuple{Real}}) ? match_length(prod_fac..., N) : prod_fac
     a_fac = isa(add_fac, Union{Real, Tuple{Real}}) ? match_length(add_fac..., N) : add_fac
@@ -601,19 +629,23 @@ end
 
 # 8
 function adj_multi_params(adj_case_path::Union{String, Tuple{String, Vararg{String}}}, adj_case_name::Union{String, Tuple{String, Vararg{String}}}, adj_case_ext::Tuple{String, Vararg{String}}, 
-                          P::Union{Bool, Tuple{Bool, Vararg{Bool}}}, Q::Union{Bool, Tuple{Bool, Vararg{Bool}}}, c2::Bool, c1::Bool, c0::Bool, rateA::Bool, vals::Union{VecOrMat{<:Real}, NTuple{n, VecOrMat{<:Real}}}; 
-                          start_x_idx::Int=1, end_x_idx::Int=0, T::Type=Float64, mean::Union{Nothing, Real, Tuple{Real, Vararg{Real}}}=nothing, sd::Union{Nothing, Real, Tuple{Real, Vararg{Real}}}=nothing, 
+                          P::Union{Bool, Tuple{Bool, Vararg{Bool}}}, Q::Union{Bool, Tuple{Bool, Vararg{Bool}}}, c2::Bool, c1::Bool, c0::Bool, rateA::Bool, paste_vals::Union{VecOrMat{<:Real}, NTuple{n, VecOrMat{<:Real}}}; 
+                          start_x_idx::Int=1, T::Type=Float64, mean::Union{Nothing, Real, Tuple{Real, Vararg{Real}}}=nothing, sd::Union{Nothing, Real, Tuple{Real, Vararg{Real}}}=nothing, 
                           overwrite_file::Bool=false, write_file_path::Union{String, Tuple{String, Vararg{String}}}="", write_file_name::Union{String, Tuple{String, Vararg{String}}}="", only_write_changed_cols::Bool=false, 
                           discard_neg_vals::Bool=true, seed::Union{Nothing, Int}=nothing) where {n}
-    args = (adj_case_path, adj_case_name, adj_case_ext, vals, mean, sd, write_file_path, write_file_name)
+    args = (adj_case_path, adj_case_name, adj_case_ext, paste_vals, mean, sd, write_file_path, write_file_name)
     N = get_common_length(args)
 
-    adj_case_path = isa(adj_case_path, Union{String, Tuple{String}}) ? match_length(String(adj_case_path), N) : adj_case_path
-    adj_case_name = isa(adj_case_name, Union{String, Tuple{String}}) ? match_length(String(adj_case_name), N) : adj_case_name
-    write_file_path = (!overwrite_file & isa(write_file_path, Union{String, NTuple{1, String}})) ? match_length(String(write_file_path), N) : write_file_path
-    write_file_name = (!overwrite_file & isa(write_file_name, Union{String, Tuple{String}})) ? match_length(String(write_file_name), N) : write_file_name
+    adj_case_path = isa(adj_case_path, String) ? match_length(adj_case_path, N) : isa(adj_case_path, Tuple{String}) ? match_length(String(adj_case_path...), N) : adj_case_path
+    adj_case_name = isa(adj_case_name, String) ? match_length(adj_case_name, N) : isa(adj_case_name, Tuple{String}) ? match_length(String(adj_case_name...), N) : adj_case_name
+    write_file_path =   (!overwrite_file & isa(write_file_path, String)) ? match_length(write_file_path, N) : 
+                        (!overwrite_file & isa(write_file_path, Tuple{String})) ? match_length(String(write_file_path...), N) : 
+                        write_file_path
+    write_file_name =   (!overwrite_file & isa(write_file_name, String)) ? match_length(write_file_name, N) : 
+                        (!overwrite_file & isa(write_file_name, Tuple{String})) ? match_length(String(write_file_name...), N) : 
+                        write_file_name
 
-    val = isa(vals, Union{VecOrMat{<:Real}, Tuple{VecOrMat{<:Real}}}) ? match_length(vals..., N) : vals
+    paste_vals = isa(paste_vals, VecOrMat{<:Real}) ? match_length(paste_vals, N) : isa(paste_vals, Tuple{VecOrMat{<:Real}}) ? match_length(paste_vals..., N) : paste_vals
     m = isa(mean, Union{Real, Tuple{Real}}) ? match_length(mean..., N) : mean
     s = isa(sd, Union{Real, Tuple{Real}}) ? match_length(sd..., N) : sd
 
@@ -622,11 +654,11 @@ function adj_multi_params(adj_case_path::Union{String, Tuple{String, Vararg{Stri
 
     @assert length(adj_case_path) == length(adj_case_name) == length(adj_case_ext) == 
             length(write_file_path) == length(write_file_name) ==
-            length(val) == length(m) == length(s) == length(sub_seeds)
+            length(paste_vals) == length(m) == length(s) == length(sub_seeds)
 
     for idx in 1:N
-        adj_params(adj_case_path[idx], adj_case_name[idx], adj_case_ext[idx], P, Q, c2, c1, c0, rateA, val[idx], 
-        start_x_idx=start_x_idx, end_x_idx=end_x_idx, T=T, mean=m[idx], sd=s[idx], 
+        adj_params(adj_case_path[idx], adj_case_name[idx], adj_case_ext[idx], P, Q, c2, c1, c0, rateA, paste_vals[idx], 
+        start_x_idx=start_x_idx, T=T, mean=m[idx], sd=s[idx], 
         overwrite_file=overwrite_file, write_file_path=write_file_path[idx], write_file_name=write_file_name[idx], 
         only_write_changed_cols=only_write_changed_cols, discard_neg_vals=discard_neg_vals, seed=sub_seeds[idx])
     end
@@ -635,9 +667,9 @@ end
 # Helper functions for Adjusting Multiple Parameters
 
 function get_common_length(args::Tuple{Any, Vararg{Any}})
-    arg_array = [arg for arg in args]
+    arg_array = collect(args)
     for idx in 1:length(arg_array)
-        if isa(arg_array[idx], String)
+        if isa(arg_array[idx], Union{String, VecOrMat{<:Real}})
             arg_array[idx] = (arg_array[idx], )
         elseif isa(arg_array[idx], Tuple)
             arg_array[idx] = Tuple(arg_array[idx])
