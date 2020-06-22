@@ -396,7 +396,7 @@ end
 # 2
 function adj_multi_params(adj_case_path::Union{String, Tuple{String, Vararg{String}}}, adj_case_name::Union{String, Tuple{String, Vararg{String}}}, adj_case_ext::Union{String, Tuple{String, Vararg{String}}}, 
                           P::Bool, Q::Bool, paste_vals::Union{VecOrMat{<:Real}, NTuple{n, VecOrMat{<:Real}}}; 
-                          start_x_idx::Int=1, end_x_idx::Int=0, T::Type=Float64, mean::Union{Nothing, Real, Tuple{Real, Vararg{Real}}}=nothing, sd::Union{Nothing, Real, Tuple{Real, Vararg{Real}}}=nothing, 
+                          start_x_idx::Int=1, T::Type=Float64, mean::Union{Nothing, Real, Tuple{Real, Vararg{Real}}}=nothing, sd::Union{Nothing, Real, Tuple{Real, Vararg{Real}}}=nothing, 
                           overwrite_file::Bool=false, write_file_path::Union{String, Tuple{String, Vararg{String}}}="", write_file_name::Union{String, Tuple{String, Vararg{String}}}="", only_write_changed_cols::Bool=false, 
                           seed::Union{Nothing, Int}=nothing) where {n}
     args = (adj_case_path, adj_case_name, adj_case_ext, paste_vals, mean, sd, write_file_path, write_file_name)
@@ -408,7 +408,7 @@ function adj_multi_params(adj_case_path::Union{String, Tuple{String, Vararg{Stri
     write_file_path = (!overwrite_file & isa(write_file_path, String)) ? match_length(write_file_path, N) : (!overwrite_file & isa(write_file_path, Tuple{String})) : match_length(String(write_file_path...), N) : write_file_path
     write_file_name = (!overwrite_file & isa(write_file_name, String)) ? match_length(write_file_name, N) : (!overwrite_file & isa(write_file_name, Tuple{String})) : match_length(String(write_file_name...), N) : write_file_name
 
-    paste_vals = isa(paste_vals, Union{VecOrMat{<:Real}, Tuple{VecOrMat{<:Real}}}) ? match_length(paste_vals..., N) : paste_vals
+    paste_vals = isa(paste_vals, VecOrMat{<:Real}) ? match_length(paste_vals, N) : isa(paste_vals, Tuple{VecOrMat{<:Real}}) ? match_length(paste_vals..., N) : paste_vals
     m = isa(mean, Union{Real, Tuple{Real}}) ? match_length(mean..., N) : mean
     s = isa(sd, Union{Real, Tuple{Real}}) ? match_length(sd..., N) : sd
 
@@ -421,7 +421,7 @@ function adj_multi_params(adj_case_path::Union{String, Tuple{String, Vararg{Stri
 
     for idx in 1:N
         adj_params(adj_case_path[idx], adj_case_name[idx], adj_case_ext[idx], P, Q, paste_vals[idx], 
-        start_x_idx=start_x_idx, end_x_idx=end_x_idx, T=T, mean=m[idx], sd=s[idx], 
+        start_x_idx=start_x_idx, T=T, mean=m[idx], sd=s[idx], 
         overwrite_file=overwrite_file, write_file_path=write_file_path[idx], write_file_name=write_file_name[idx], 
         only_write_changed_cols=only_write_changed_cols, seed=sub_seeds[idx])
     end
@@ -465,7 +465,7 @@ end
 # 4
 function adj_multi_params(adj_case_path::Union{String, Tuple{String, Vararg{String}}}, adj_case_name::Union{String, Tuple{String, Vararg{String}}}, adj_case_ext::Union{String, Tuple{String, Vararg{String}}}, 
                           c2::Bool, c1::Bool, c0::Bool, paste_vals::Union{VecOrMat{<:Real}, NTuple{n, VecOrMat{<:Real}}}; 
-                          start_x_idx::Int=1, end_x_idx::Int=0, T::Type=Float64, mean::Union{Nothing, Real, Tuple{Real, Vararg{Real}}}=nothing, sd::Union{Nothing, Real, Tuple{Real, Vararg{Real}}}=nothing, 
+                          start_x_idx::Int=1, T::Type=Float64, mean::Union{Nothing, Real, Tuple{Real, Vararg{Real}}}=nothing, sd::Union{Nothing, Real, Tuple{Real, Vararg{Real}}}=nothing, 
                           overwrite_file::Bool=false, write_file_path::Union{String, Tuple{String, Vararg{String}}}="", write_file_name::Union{String, Tuple{String, Vararg{String}}}="", only_write_changed_cols::Bool=false, 
                           discard_neg_vals::Bool=true, seed::Union{Nothing, Int}=nothing) where {n}
     args = (adj_case_path, adj_case_name, adj_case_ext, paste_vals, mean, sd, write_file_path, write_file_name)
@@ -477,7 +477,7 @@ function adj_multi_params(adj_case_path::Union{String, Tuple{String, Vararg{Stri
     write_file_path = (!overwrite_file & isa(write_file_path, String)) ? match_length(write_file_path, N) : (!overwrite_file & isa(write_file_path, Tuple{String})) : match_length(String(write_file_path...), N) : write_file_path
     write_file_name = (!overwrite_file & isa(write_file_name, String)) ? match_length(write_file_name, N) : (!overwrite_file & isa(write_file_name, Tuple{String})) : match_length(String(write_file_name...), N) : write_file_name
 
-    paste_vals = isa(paste_vals, Union{VecOrMat{<:Real}, Tuple{VecOrMat{<:Real}}}) ? match_length(paste_vals..., N) : paste_vals
+    paste_vals = isa(paste_vals, VecOrMat{<:Real}) ? match_length(paste_vals, N) : isa(paste_vals, Tuple{VecOrMat{<:Real}}) ? match_length(paste_vals..., N) : paste_vals
     m = isa(mean, Union{Real, Tuple{Real}}) ? match_length(mean..., N) : mean
     s = isa(sd, Union{Real, Tuple{Real}}) ? match_length(sd..., N) : sd
 
@@ -490,7 +490,7 @@ function adj_multi_params(adj_case_path::Union{String, Tuple{String, Vararg{Stri
 
     for idx in 1:N
         adj_params(adj_case_path[idx], adj_case_name[idx], adj_case_ext[idx], c2, c1, c0, paste_vals[idx], 
-        start_x_idx=start_x_idx, end_x_idx=end_x_idx, T=T, mean=m[idx], sd=s[idx], 
+        start_x_idx=start_x_idx, T=T, mean=m[idx], sd=s[idx], 
         overwrite_file=overwrite_file, write_file_path=write_file_path[idx], write_file_name=write_file_name[idx], 
         only_write_changed_cols=only_write_changed_cols, discard_neg_vals=discard_neg_vals, seed=sub_seeds[idx])
     end
@@ -534,7 +534,7 @@ end
 # 6
 function adj_multi_params(adj_case_path::Union{String, Tuple{String, Vararg{String}}}, adj_case_name::Union{String, Tuple{String, Vararg{String}}}, adj_case_ext::Union{String, Tuple{String, Vararg{String}}}, 
                           rateA::Bool, paste_vals::Union{VecOrMat{<:Real}, NTuple{n, VecOrMat{<:Real}}}; 
-                          start_x_idx::Int=1, end_x_idx::Int=0, T::Type=Float64, mean::Union{Nothing, Real, Tuple{Real, Vararg{Real}}}=nothing, sd::Union{Nothing, Real, Tuple{Real, Vararg{Real}}}=nothing, 
+                          start_x_idx::Int=1, T::Type=Float64, mean::Union{Nothing, Real, Tuple{Real, Vararg{Real}}}=nothing, sd::Union{Nothing, Real, Tuple{Real, Vararg{Real}}}=nothing, 
                           overwrite_file::Bool=false, write_file_path::Union{String, Tuple{String, Vararg{String}}}="", write_file_name::Union{String, Tuple{String, Vararg{String}}}="", only_write_changed_cols::Bool=false, 
                           seed::Union{Nothing, Int}=nothing) where {n}
     args = (adj_case_path, adj_case_name, adj_case_ext, paste_vals, mean, sd, write_file_path, write_file_name)
@@ -546,7 +546,7 @@ function adj_multi_params(adj_case_path::Union{String, Tuple{String, Vararg{Stri
     write_file_path = (!overwrite_file & isa(write_file_path, String)) ? match_length(write_file_path, N) : (!overwrite_file & isa(write_file_path, Tuple{String})) : match_length(String(write_file_path...), N) : write_file_path
     write_file_name = (!overwrite_file & isa(write_file_name, String)) ? match_length(write_file_name, N) : (!overwrite_file & isa(write_file_name, Tuple{String})) : match_length(String(write_file_name...), N) : write_file_name
 
-    paste_vals = isa(paste_vals, Union{VecOrMat{<:Real}, Tuple{VecOrMat{<:Real}}}) ? match_length(paste_vals, N) : paste_vals
+    paste_vals = isa(paste_vals, VecOrMat{<:Real}) ? match_length(paste_vals, N) : isa(paste_vals, Tuple{VecOrMat{<:Real}}) ? match_length(paste_vals..., N) : paste_vals
     m = isa(mean, Union{Real, Tuple{Real}}) ? match_length(mean..., N) : mean
     s = isa(sd, Union{Real, Tuple{Real}}) ? match_length(sd..., N) : sd
 
@@ -559,7 +559,7 @@ function adj_multi_params(adj_case_path::Union{String, Tuple{String, Vararg{Stri
 
     for idx in 1:N
         adj_params(adj_case_path[idx], adj_case_name[idx], adj_case_ext[idx], rateA, paste_vals[idx], 
-        start_x_idx=start_x_idx, end_x_idx=end_x_idx, T=T, mean=m[idx], sd=s[idx], 
+        start_x_idx=start_x_idx, T=T, mean=m[idx], sd=s[idx], 
         overwrite_file=overwrite_file, write_file_path=write_file_path[idx], write_file_name=write_file_name[idx], 
         only_write_changed_cols=only_write_changed_cols, seed=sub_seeds[idx])
     end
@@ -602,7 +602,7 @@ end
 # 8
 function adj_multi_params(adj_case_path::Union{String, Tuple{String, Vararg{String}}}, adj_case_name::Union{String, Tuple{String, Vararg{String}}}, adj_case_ext::Tuple{String, Vararg{String}}, 
                           P::Union{Bool, Tuple{Bool, Vararg{Bool}}}, Q::Union{Bool, Tuple{Bool, Vararg{Bool}}}, c2::Bool, c1::Bool, c0::Bool, rateA::Bool, paste_vals::Union{VecOrMat{<:Real}, NTuple{n, VecOrMat{<:Real}}}; 
-                          start_x_idx::Int=1, end_x_idx::Int=0, T::Type=Float64, mean::Union{Nothing, Real, Tuple{Real, Vararg{Real}}}=nothing, sd::Union{Nothing, Real, Tuple{Real, Vararg{Real}}}=nothing, 
+                          start_x_idx::Int=1, T::Type=Float64, mean::Union{Nothing, Real, Tuple{Real, Vararg{Real}}}=nothing, sd::Union{Nothing, Real, Tuple{Real, Vararg{Real}}}=nothing, 
                           overwrite_file::Bool=false, write_file_path::Union{String, Tuple{String, Vararg{String}}}="", write_file_name::Union{String, Tuple{String, Vararg{String}}}="", only_write_changed_cols::Bool=false, 
                           discard_neg_vals::Bool=true, seed::Union{Nothing, Int}=nothing) where {n}
     args = (adj_case_path, adj_case_name, adj_case_ext, paste_vals, mean, sd, write_file_path, write_file_name)
@@ -613,7 +613,7 @@ function adj_multi_params(adj_case_path::Union{String, Tuple{String, Vararg{Stri
     write_file_path = (!overwrite_file & isa(write_file_path, String)) ? match_length(write_file_path, N) : (!overwrite_file & isa(write_file_path, Tuple{String})) : match_length(String(write_file_path...), N) : write_file_path
     write_file_name = (!overwrite_file & isa(write_file_name, String)) ? match_length(write_file_name, N) : (!overwrite_file & isa(write_file_name, Tuple{String})) : match_length(String(write_file_name...), N) : write_file_name
 
-    paste_vals = isa(paste_vals, Union{VecOrMat{<:Real}, Tuple{VecOrMat{<:Real}}}) ? match_length(paste_vals..., N) : paste_vals
+    paste_vals = isa(paste_vals, VecOrMat{<:Real}) ? match_length(paste_vals, N) : isa(paste_vals, Tuple{VecOrMat{<:Real}}) ? match_length(paste_vals..., N) : paste_vals
     m = isa(mean, Union{Real, Tuple{Real}}) ? match_length(mean..., N) : mean
     s = isa(sd, Union{Real, Tuple{Real}}) ? match_length(sd..., N) : sd
 
@@ -626,7 +626,7 @@ function adj_multi_params(adj_case_path::Union{String, Tuple{String, Vararg{Stri
 
     for idx in 1:N
         adj_params(adj_case_path[idx], adj_case_name[idx], adj_case_ext[idx], P, Q, c2, c1, c0, rateA, paste_vals[idx], 
-        start_x_idx=start_x_idx, end_x_idx=end_x_idx, T=T, mean=m[idx], sd=s[idx], 
+        start_x_idx=start_x_idx, T=T, mean=m[idx], sd=s[idx], 
         overwrite_file=overwrite_file, write_file_path=write_file_path[idx], write_file_name=write_file_name[idx], 
         only_write_changed_cols=only_write_changed_cols, discard_neg_vals=discard_neg_vals, seed=sub_seeds[idx])
     end
