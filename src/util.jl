@@ -59,12 +59,12 @@ function fill_write_file_name(file_name::String, write_file_name::String, overwr
     return filled_write_file_name
 end
 
-function match_length(target::Union{Nothing, String, Real, Array{Real}}, N::Int)
+function match_length(target::Union{Nothing, String, Real, Array{<:Real}}, N::Int)
     return isa(target, Union{Nothing, String, Real}) ? Tuple(repeat([target], N)) : fill(target, N)
 end
 
 function cp_remaining_files(src_path::String, dst_path::String, file_name::String)
-    file_exts = [".bus", ".gen", ".gencost", ".branch", ".phys"]
+    file_exts = (".bus", ".gen", ".gencost", ".branch", ".phys")
     src_file_path = complete_file_path(src_path) * file_name
     dst_file_path = complete_file_path(dst_path) * file_name
     for ext in file_exts
