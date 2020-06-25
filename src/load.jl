@@ -304,14 +304,3 @@ function mapGenersToBuses(opfdata::OPFData)
   end
   return D
 end
-
-# complete the base_files dictionary if not composed
-function complete_base_files(base_files::Dict{String, Array}, file_path::String, file_name::String; T::Type=Float64)
-  file_exts = (".bus", ".branch", ".gen", ".gencost", ".phys")
-  for f_ext in file_exts
-    if !haskey(base_files, f_ext)
-      base_files[f_ext] = readdlm(complete_file_path(file_path) * file_name * f_ext, T)
-    end
-  end
-  return base_files
-end
