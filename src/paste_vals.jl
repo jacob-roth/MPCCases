@@ -92,19 +92,10 @@ function get_shed_line_idx(cascades_root::String, case_name::String, oppt_dir_na
     return shed_line_idx
 end
 
-function get_shed_lines(cascades_root::String, case_name::String, oppt_dir_name::String, file_name::String; 
-                        rate_thresh::Union{Nothing, Int, Float64}=nothing, num_lines::Union{Nothing, Int}=nothing,
-                        write_file_path::String="")
+function get_shed_bus_idx(cascades_root::String, case_name::String, oppt_dir_name::String, file_name::String; 
+                        rate_thresh::Union{Nothing, Int, Float64}=nothing, num_lines::Union{Nothing, Int}=nothing)
     shed_line_idx = get_shed_line_idx(cascades_root, case_name, oppt_dir_name, rate_thresh=rate_thresh, num_lines=num_lines)
     branches = get_case_file(cascades_root, case_name, file_name, ".branch")
-    shed_bus_ids = convert(Array{Int}, unique(branches[shed_line_idx, [1,2]]))
-    buses = get_case_file(cascades_root, case_name, file_name, ".bus")
-    paste_vals = get_paste_vals(buses, ".bus", true, true, shed_bus_ids, 0)
-    write_file_path = complete_file_path(mkpath(write_file_path))
-
-    if !isempty(write_file_path)
-        open(write_file_path * file_name * ".bus", "w") do io
-            writedlm(io, paste_vals)
-        end
-    end
+    shed_bus_idx = convert(Array{Int}, unique(branches[shed_line_idx, [1,2]]))
+    return shed_bus_idx
 end
