@@ -93,7 +93,7 @@ function get_shed_line_idx(cascades_root::String, case_name::String, oppt_dir_na
 end
 
 function get_shed_bus_idx(cascades_root::String, case_name::String, oppt_dir_name::String, file_name::String; 
-                        rate_thresh::Union{Nothing, Int, Float64}=nothing, num_lines::Union{Nothing, Int}=nothing)
+                          rate_thresh::Union{Nothing, Int, Float64}=nothing, num_lines::Union{Nothing, Int}=nothing)
     shed_line_idx = get_shed_line_idx(cascades_root, case_name, oppt_dir_name, rate_thresh=rate_thresh, num_lines=num_lines)
     branches = get_case_file(cascades_root, case_name, file_name, ".branch")
     shed_bus_idx = convert(Array{Int}, unique(branches[shed_line_idx, [1,2]]))

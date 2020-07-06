@@ -22,7 +22,7 @@ include("compose.jl")
 export compose_file
 
 include("paste_vals.jl")
-export get_paste_vals
+export get_paste_vals, get_shed_bus_idx
 
 include("map_id.jl")
 export apply_mapping_to_file
