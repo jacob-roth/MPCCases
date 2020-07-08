@@ -4,7 +4,7 @@
 function adj_params(read_file_path::String, file_name::String, file_ext::String, P::Bool, Q::Bool, prod_fac::Real, add_fac::Real; 
                     start_x_idx::Int=1, end_x_idx::Int=0, T::Type=Float64, mean::Union{Nothing, Real}=nothing, sd::Union{Nothing, Real}=nothing, 
                     overwrite_file::Bool=false, write_file_path::String="", write_file_name::String="", only_write_changed_cols::Bool=false, 
-                    seed::Union{Nothing, Int}=nothing)
+                    discard_neg_vals::Bool=true, seed::Union{Nothing, Int}=nothing)
     read_file_path = complete_file_path(read_file_path)
     arr = readdlm(read_file_path * file_name * file_ext, T)
     y_idx = get_y_idx(file_ext, P, Q)
@@ -12,14 +12,15 @@ function adj_params(read_file_path::String, file_name::String, file_ext::String,
     vals = generate_vals(arr, start_x_idx, end_x_idx, y_idx, prod_fac, add_fac)
     perturbed_vals = isnothing(mean) | isnothing(sd) ? vals : add_gaussian_noise(vals, mean, sd, seed)
     adj_arr = adj_vals_in_arr(arr, start_x_idx, y_idx, perturbed_vals)
+    abs_adj_arr = discard_neg_vals ? undo_neg_vals(adj_arr, start_x_idx, y_idx, vals) : adj_arr
     filled_write_file_path = fill_write_file_path(write_file_path, read_file_path, overwrite_file, "adj/")
     filled_write_file_name = fill_write_file_name(file_name, write_file_name, overwrite_file)
     write_cols_idx = get_write_cols_idx(file_ext)
     open(filled_write_file_path * filled_write_file_name * file_ext, "w") do io
         if only_write_changed_cols
-            writedlm(io, adj_arr[:, write_cols_idx])
+            writedlm(io, abs_adj_arr[:, write_cols_idx])
         else
-            writedlm(io, adj_arr)
+            writedlm(io, abs_adj_arr)
         end
     end
 end
@@ -28,21 +29,22 @@ end
 function adj_params(read_file_path::String, file_name::String, file_ext::String,  P::Bool, Q::Bool, paste_vals::VecOrMat{<:Real}; 
                     start_x_idx::Int=1,  T::Type=Float64, mean::Union{Nothing, Real}=nothing, sd::Union{Nothing, Real}=nothing, 
                     overwrite_file::Bool=false, write_file_path::String="", write_file_name::String="", only_write_changed_cols::Bool=false, 
-                    seed::Union{Nothing, Int}=nothing)
+                    discard_neg_vals::Bool=true, seed::Union{Nothing, Int}=nothing)
     read_file_path = complete_file_path(read_file_path)
     arr = readdlm(read_file_path * file_name * file_ext, T)
     y_idx = get_y_idx(file_ext, P, Q)
     vals = isempty(paste_vals) ? arr[start_x_idx:end, y_idx] : reshape_vals(paste_vals, P, Q)
     perturbed_vals = isnothing(mean) | isnothing(sd) ? vals : add_gaussian_noise(vals, mean, sd, seed)
     adj_arr = adj_vals_in_arr(arr, start_x_idx, y_idx, perturbed_vals)
+    abs_adj_arr = discard_neg_vals ? undo_neg_vals(adj_arr, start_x_idx, y_idx, vals) : adj_arr
     filled_write_file_path = fill_write_file_path(write_file_path, read_file_path, overwrite_file, "adj/")
     filled_write_file_name = fill_write_file_name(file_name, write_file_name, overwrite_file)
     write_cols_idx = get_write_cols_idx(file_ext)
     open(filled_write_file_path * filled_write_file_name * file_ext, "w") do io
         if only_write_changed_cols
-            writedlm(io, adj_arr[:, write_cols_idx])
+            writedlm(io, abs_adj_arr[:, write_cols_idx])
         else
-            writedlm(io, adj_arr)
+            writedlm(io, abs_adj_arr)
         end
     end
 end
@@ -165,7 +167,7 @@ function adj_params(read_file_path::String, file_name::String, file_ext::Union{S
                 adj_params(read_file_path, file_name, f_ext, p, q, p_fac, a_fac, 
                            start_x_idx=start_x_idx, end_x_idx=end_x_idx, T=T, mean=m, sd=s, 
                            overwrite_file=overwrite_file, write_file_path=write_file_path, write_file_name=write_file_name, 
-                           only_write_changed_cols=only_write_changed_cols, seed=seed)
+                           only_write_changed_cols=only_write_changed_cols, discard_neg_vals=discard_neg_vals, seed=seed)
             elseif f_ext == ".gencost"
                 adj_params(read_file_path, file_name, f_ext, c2, c1, c0, p_fac, a_fac, 
                            start_x_idx=start_x_idx, end_x_idx=end_x_idx, T=T, mean=m, sd=s, 
@@ -190,7 +192,7 @@ function adj_params(read_file_path::String, file_name::String, file_ext::Union{S
             adj_params(read_file_path, file_name, file_ext, p, q, p_fac, a_fac, 
                        start_x_idx=start_x_idx, T=T, mean=m, sd=s, 
                        overwrite_file=overwrite_file, write_file_path=write_file_path, write_file_name=write_file_name, 
-                       only_write_changed_cols=only_write_changed_cols, seed=seed)
+                       only_write_changed_cols=only_write_changed_cols, discard_neg_vals=discard_neg_vals, seed=seed)
         elseif file_ext == ".gencost"
             adj_params(read_file_path, file_name, file_ext, c2, c1, c0, p_fac, a_fac, 
                        start_x_idx=start_x_idx, T=T, mean=m, sd=s, 
@@ -228,7 +230,7 @@ function adj_params(read_file_path::String, file_name::String, file_ext::Union{S
                 adj_params(read_file_path, file_name, f_ext, p, q, paste_val, 
                            start_x_idx=start_x_idx, T=T, mean=m, sd=s, 
                            overwrite_file=overwrite_file, write_file_path=write_file_path, write_file_name=write_file_name, 
-                           only_write_changed_cols=only_write_changed_cols, seed=seed)
+                           only_write_changed_cols=only_write_changed_cols, discard_neg_vals=discard_neg_vals, seed=seed)
             elseif f_ext == ".gencost"
                 adj_params(read_file_path, file_name, f_ext, c2, c1, c0, paste_val, 
                            start_x_idx=start_x_idx, T=T, mean=m, sd=s, 
@@ -253,7 +255,7 @@ function adj_params(read_file_path::String, file_name::String, file_ext::Union{S
             adj_params(read_file_path, file_name, file_ext, p, q, paste_val, 
                        start_x_idx=start_x_idx, T=T, mean=m, sd=s, 
                        overwrite_file=overwrite_file, write_file_path=write_file_path, write_file_name=write_file_name, 
-                       only_write_changed_cols=only_write_changed_cols, seed=seed)
+                       only_write_changed_cols=only_write_changed_cols, discard_neg_vals=discard_neg_vals, seed=seed)
         elseif file_ext == ".gencost"
             adj_params(read_file_path, file_name, file_ext, c2, c1, c0, paste_val, 
                        start_x_idx=start_x_idx, T=T, mean=m, sd=s, 
@@ -363,7 +365,7 @@ function adj_multi_params(adj_case_path::Union{String, Tuple{String, Vararg{Stri
                           P::Bool, Q::Bool, prod_fac::Union{Real, Tuple{Real, Vararg{Real}}}, add_fac::Union{Real, Tuple{Real, Vararg{Real}}}; 
                           start_x_idx::Int=1, end_x_idx::Int=0, T::Type=Float64, mean::Union{Nothing, Real, Tuple{Real, Vararg{Real}}}=nothing, sd::Union{Nothing, Real, Tuple{Real, Vararg{Real}}}=nothing, 
                           overwrite_file::Bool=false, write_file_path::Union{String, Tuple{String, Vararg{String}}}="", write_file_name::Union{String, Tuple{String, Vararg{String}}}="", only_write_changed_cols::Bool=false, 
-                          seed::Union{Nothing, Int}=nothing)
+                          discard_neg_vals::Bool=true, seed::Union{Nothing, Int}=nothing)
     args = (adj_case_path, adj_case_name, adj_case_ext, prod_fac, add_fac, mean, sd, write_file_path, write_file_name)
     N = get_common_length(args)
 
@@ -393,7 +395,7 @@ function adj_multi_params(adj_case_path::Union{String, Tuple{String, Vararg{Stri
         adj_params(adj_case_path[idx], adj_case_name[idx], adj_case_ext[idx], P, Q, p_fac[idx], a_fac[idx], 
         start_x_idx=start_x_idx, end_x_idx=end_x_idx, T=T, mean=m[idx], sd=s[idx], 
         overwrite_file=overwrite_file, write_file_path=write_file_path[idx], write_file_name=write_file_name[idx], 
-        only_write_changed_cols=only_write_changed_cols, seed=sub_seeds[idx])
+        only_write_changed_cols=only_write_changed_cols, discard_neg_vals=discard_neg_vals, seed=sub_seeds[idx])
     end
 end
 
@@ -402,7 +404,7 @@ function adj_multi_params(adj_case_path::Union{String, Tuple{String, Vararg{Stri
                           P::Bool, Q::Bool, paste_vals::Union{VecOrMat{<:Real}, NTuple{n, VecOrMat{<:Real}}}; 
                           start_x_idx::Int=1, T::Type=Float64, mean::Union{Nothing, Real, Tuple{Real, Vararg{Real}}}=nothing, sd::Union{Nothing, Real, Tuple{Real, Vararg{Real}}}=nothing, 
                           overwrite_file::Bool=false, write_file_path::Union{String, Tuple{String, Vararg{String}}}="", write_file_name::Union{String, Tuple{String, Vararg{String}}}="", only_write_changed_cols::Bool=false, 
-                          seed::Union{Nothing, Int}=nothing) where {n}
+                          discard_neg_vals::Bool=true, seed::Union{Nothing, Int}=nothing) where {n}
     args = (adj_case_path, adj_case_name, adj_case_ext, paste_vals, mean, sd, write_file_path, write_file_name)
     N = get_common_length(args)
 
@@ -431,7 +433,7 @@ function adj_multi_params(adj_case_path::Union{String, Tuple{String, Vararg{Stri
         adj_params(adj_case_path[idx], adj_case_name[idx], adj_case_ext[idx], P, Q, paste_vals[idx], 
         start_x_idx=start_x_idx, T=T, mean=m[idx], sd=s[idx], 
         overwrite_file=overwrite_file, write_file_path=write_file_path[idx], write_file_name=write_file_name[idx], 
-        only_write_changed_cols=only_write_changed_cols, seed=sub_seeds[idx])
+        only_write_changed_cols=only_write_changed_cols, discard_neg_vals=discard_neg_vals, seed=sub_seeds[idx])
     end
 end
 
