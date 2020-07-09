@@ -94,6 +94,36 @@ function cp_remaining_files(src_path::Union{String, NTuple{N, String}}, dst_path
     end
 end
 
+function get_path_dict(cascades_root::String, case_name::String)
+    cascades_root = complete_file_path(cascades_root)
+    path_dict = Dict{Symbol, String}()
+    path_dict[:casedata_path] = cascades_root * "casedata/" * case_name * "/"
+    path_dict[:operatingdata_path] = cascades_root * "operatingdata/" * case_name * "/"
+    path_dict[:kmcdata_path] = cascades_root * "kmcdata/"
+    return path_dict
+end
+
+function add_gaussian_noise(vals::VecOrMat{<:Real}, mean::Real, sd::Real, seed::Union{Nothing, Int})
+    rng = isnothing(seed) ? MersenneTwister() : MersenneTwister(seed)
+    dims = size(vals)
+    gaussian_noise = randn(rng, dims)
+    scaled_gaussian_noise = (sd .* gaussian_noise) .+ mean
+    return vals + scaled_gaussian_noise
+end
+
+# For Pd, c2, c1, c0, if adjustment in adj_arr is negative, use the values from vals instead. Also used in Pg from xbar
+function undo_neg_vals(adj_arr::VecOrMat{<:Real}, start_x_idx::Int, y_idx::Union{Nothing, Vector{Int}}, vals::VecOrMat{<:Real})
+    if isnothing(y_idx)
+        return adj_arr
+    else
+        vals_length = size(vals, 1)
+        subset_adj_arr = adj_arr[start_x_idx : (start_x_idx + vals_length - 1), y_idx]
+        discard_neg_vals = subset_adj_arr .* (subset_adj_arr .>= 0) + vals .* (subset_adj_arr .< 0)
+        adj_arr[start_x_idx : (start_x_idx + vals_length - 1), y_idx] = discard_neg_vals
+        return adj_arr
+    end
+end
+
 function get_phys(buses::AbstractArray; Dv::T, Mg::T, Dl::T, Dg::T) where T <: AbstractFloat
     phys = MPCCases.Phys[]
     for i in eachindex(buses)

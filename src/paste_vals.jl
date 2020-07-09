@@ -53,15 +53,6 @@ end
 
 ## Complementary Functions
 
-function get_path_dict(cascades_root::String, case_name::String)
-    cascades_root = complete_file_path(cascades_root)
-    path_dict = Dict{Symbol, String}()
-    path_dict[:casedata_path] = cascades_root * "casedata/" * case_name * "/"
-    path_dict[:operatingdata_path] = cascades_root * "operatingdata/" * case_name * "/"
-    path_dict[:kmcdata_path] = cascades_root * "kmcdata/"
-    return path_dict
-end
-
 function get_rates(cascades_root::String, case_name::String, oppt_dir_name::String)
     path_dict = get_path_dict(cascades_root, case_name)
     rates = vec(readdlm(path_dict[:operatingdata_path] * oppt_dir_name * "/rates.csv"))
