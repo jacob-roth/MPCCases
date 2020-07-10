@@ -103,10 +103,10 @@ function get_path_dict(cascades_root::String, case_name::String)
     return path_dict
 end
 
-function get_case_file(cascades_root::String, case_name::String, file_name::String, file_ext::String)
+function get_case_arr(cascades_root::String, case_name::String, file_name::String, file_ext::String)
     path_dict = get_path_dict(cascades_root, case_name)
-    case_file = readdlm(path_dict[:casedata_path] * file_name * file_ext)
-    return case_file
+    case_arr = readdlm(path_dict[:casedata_path] * file_name * file_ext)
+    return case_arr
 end
 
 function add_gaussian_noise(vals::VecOrMat{<:Real}, mean::Real, sd::Real, seed::Union{Nothing, Int})
