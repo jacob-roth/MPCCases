@@ -53,15 +53,9 @@ end
 
 ## Complementary Functions
 
-function get_rates(cascades_root::String, case_name::String, oppt_dir_name::String)
-    path_dict = get_path_dict(cascades_root, case_name)
-    rates = vec(readdlm(path_dict[:operatingdata_path] * oppt_dir_name * "/rates.csv"))
-    return rates
-end
-
 function get_shed_line_idx(cascades_root::String, case_name::String, oppt_dir_name::String; 
                            rate_thresh::Union{Nothing, Int, Float64}=nothing, num_lines::Union{Nothing, Int}=nothing)
-    rates = get_rates(cascades_root, case_name, oppt_dir_name)
+    rates = get_xbar_arr(cascades_root, case_name, oppt_dir_name, "rates")
     sorted_rate_idx = sortperm(rates, rev=true)
     if !isnothing(rate_thresh) & isnothing(num_lines)
         shed_line_idx = sorted_rate_idx[rates[sorted_rate_idx] .>= rate_thresh]

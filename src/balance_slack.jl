@@ -1,22 +1,5 @@
 # Balance the slack of Pg from xbar after perturbing Pg
 
-function get_xbar_dict(cascades_root::String, case_name::String, oppt_dir_name::String)
-    path_dict = get_path_dict(cascades_root, case_name)
-    xbar_dict = Dict{Symbol, Array}()
-    for file in readdir(path_dict[:operatingdata_path] * oppt_dir_name * "/")
-        file_name = replace(file, ".csv" => "")
-        arr = readdlm(path_dict[:operatingdata_path] * oppt_dir_name * "/" * file)
-        xbar_dict[Symbol(file_name)] = size(arr, 2) == 1 ? vec(arr) : arr
-    end
-    return xbar_dict
-end
-
-function get_xbar_arr(cascades_root::String, case_name::String, oppt_dir_name::String, sol_file_name::String)
-    xbar_dict = get_xbar_dict(cascades_root, case_name, oppt_dir_name)
-    xbar_arr = xbar_dict[Symbol(sol_file_name)]
-    return xbar_arr
-end
-
 function get_perturbed_xbar_arr(cascades_root::String, case_name::String, oppt_dir_name::String, sol_file_name::String; 
                                 start_x_idx::Int=1, y_idx::Union{Nothing, Vector{Int}}=nothing, 
                                 mean::Union{Nothing, Int, Float64}=nothing, sd::Union{Nothing, Int, Float64}=nothing, 
@@ -79,7 +62,7 @@ function balance_slack(cascades_root::String, case_name::String, oppt_dir_name::
     end
 
     perturbed_xbar_arr[slack_idx] -= perturbed_sum
-    @assert sum(perturbed_xbar_arr) - sum(xbar_arr) <= eps(Float32)
+    @assert sum(perturbed_xbar_arr) - sum(xbar_arr) <= 1e-10
     return perturbed_xbar_arr
 end
 
