@@ -59,12 +59,6 @@ function get_rates(cascades_root::String, case_name::String, oppt_dir_name::Stri
     return rates
 end
 
-function get_case_file(cascades_root::String, case_name::String, file_name::String, file_ext::String)
-    path_dict = get_path_dict(cascades_root, case_name)
-    case_file = readdlm(path_dict[:casedata_path] * file_name * file_ext)
-    return case_file
-end
-
 function get_shed_line_idx(cascades_root::String, case_name::String, oppt_dir_name::String; 
                            rate_thresh::Union{Nothing, Int, Float64}=nothing, num_lines::Union{Nothing, Int}=nothing)
     rates = get_rates(cascades_root, case_name, oppt_dir_name)
