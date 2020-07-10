@@ -327,14 +327,6 @@ function reshape_vals(vals::VecOrMat{<:Real}, rateA::Bool)
     end
 end
 
-function add_gaussian_noise(vals::VecOrMat{<:Real}, mean::Real, sd::Real, seed::Union{Nothing, Int})
-    rng = isnothing(seed) ? MersenneTwister() : MersenneTwister(seed)
-    dims = size(vals)
-    gaussian_noise = randn(rng, dims)
-    scaled_gaussian_noise = (sd .* gaussian_noise) .+ mean
-    return vals + scaled_gaussian_noise
-end
-
 function adj_vals_in_arr(arr::VecOrMat{<:Real}, start_x_idx::Int, y_idx::Union{Nothing, Vector{Int}}, perturbed_vals::VecOrMat{<:Real})
     if isnothing(y_idx)
         return arr
@@ -342,19 +334,6 @@ function adj_vals_in_arr(arr::VecOrMat{<:Real}, start_x_idx::Int, y_idx::Union{N
         vals_length = size(perturbed_vals, 1)
         arr[start_x_idx : (start_x_idx + vals_length - 1), y_idx] = perturbed_vals
         return arr
-    end
-end
-
-# For .gencost, if adjustment in adj_arr is negative, use the values from vals instead
-function undo_neg_vals(adj_arr::VecOrMat{<:Real}, start_x_idx::Int, y_idx::Union{Nothing, Vector{Int}}, vals::VecOrMat{<:Real})
-    if isnothing(y_idx)
-        return adj_arr
-    else
-        vals_length = size(vals, 1)
-        subset_adj_arr = adj_arr[start_x_idx : (start_x_idx + vals_length - 1), y_idx]
-        discard_neg_vals = subset_adj_arr .* (subset_adj_arr .>= 0) + vals .* (subset_adj_arr .< 0)
-        adj_arr[start_x_idx : (start_x_idx + vals_length - 1), y_idx] = discard_neg_vals
-        return adj_arr
     end
 end
 

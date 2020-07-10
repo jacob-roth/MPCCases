@@ -94,6 +94,59 @@ function cp_remaining_files(src_path::Union{String, NTuple{N, String}}, dst_path
     end
 end
 
+function get_path_dict(cascades_root::String, case_name::String)
+    cascades_root = complete_file_path(cascades_root)
+    path_dict = Dict{Symbol, String}()
+    path_dict[:casedata_path] = cascades_root * "casedata/" * case_name * "/"
+    path_dict[:operatingdata_path] = cascades_root * "operatingdata/" * case_name * "/"
+    path_dict[:kmcdata_path] = cascades_root * "kmcdata/"
+    return path_dict
+end
+
+function get_case_arr(cascades_root::String, case_name::String, file_name::String, file_ext::String)
+    path_dict = get_path_dict(cascades_root, case_name)
+    case_arr = readdlm(path_dict[:casedata_path] * file_name * file_ext)
+    return case_arr
+end
+
+function add_gaussian_noise(vals::VecOrMat{<:Real}, mean::Real, sd::Real, seed::Union{Nothing, Int})
+    rng = isnothing(seed) ? MersenneTwister() : MersenneTwister(seed)
+    dims = size(vals)
+    gaussian_noise = randn(rng, dims)
+    scaled_gaussian_noise = (sd .* gaussian_noise) .+ mean
+    return vals + scaled_gaussian_noise
+end
+
+# For Pd, c2, c1, c0, if adjustment in adj_arr is negative, use the values from vals instead. Also used in Pg from xbar
+function undo_neg_vals(adj_arr::VecOrMat{<:Real}, start_x_idx::Int, y_idx::Union{Nothing, Vector{Int}}, vals::VecOrMat{<:Real})
+    if isnothing(y_idx)
+        return adj_arr
+    else
+        vals_length = size(vals, 1)
+        subset_adj_arr = adj_arr[start_x_idx : (start_x_idx + vals_length - 1), y_idx]
+        discard_neg_vals = subset_adj_arr .* (subset_adj_arr .>= 0) + vals .* (subset_adj_arr .< 0)
+        adj_arr[start_x_idx : (start_x_idx + vals_length - 1), y_idx] = discard_neg_vals
+        return adj_arr
+    end
+end
+
+function get_xbar_dict(cascades_root::String, case_name::String, oppt_dir_name::String)
+    path_dict = get_path_dict(cascades_root, case_name)
+    xbar_dict = Dict{Symbol, Array}()
+    for file in readdir(path_dict[:operatingdata_path] * oppt_dir_name * "/")
+        file_name = replace(file, ".csv" => "")
+        arr = readdlm(path_dict[:operatingdata_path] * oppt_dir_name * "/" * file)
+        xbar_dict[Symbol(file_name)] = size(arr, 2) == 1 ? vec(arr) : arr
+    end
+    return xbar_dict
+end
+
+function get_xbar_arr(cascades_root::String, case_name::String, oppt_dir_name::String, sol_file_name::String)
+    xbar_dict = get_xbar_dict(cascades_root, case_name, oppt_dir_name)
+    xbar_arr = xbar_dict[Symbol(sol_file_name)]
+    return xbar_arr
+end
+
 function get_phys(buses::AbstractArray; Dv::T, Mg::T, Dl::T, Dg::T) where T <: AbstractFloat
     phys = MPCCases.Phys[]
     for i in eachindex(buses)
