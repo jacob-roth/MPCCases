@@ -39,7 +39,7 @@ function balance_slack(cascades_root::String, case_name::String, oppt_dir_name::
                        start_x_idx::Int=1, y_idx::Union{Nothing, Vector{Int}}=nothing, 
                        mean::Union{Nothing, Int, Float64}=nothing, sd::Union{Nothing, Int, Float64}=nothing, 
                        scale_fac::Union{Nothing, Int, Float64}=nothing,
-                       discard_neg_vals::Bool=true, seed::Union{Nothing, Int}=nothing)
+                       discard_neg_vals::Bool=true, seed::Union{Nothing, Int}=nothing, err::Real=1e-9)
     slack_bus_type = 3
     slack_id = Int(first(get_bus_id(cascades_root, case_name, file_name, slack_bus_type)))
     gen_arr = get_case_arr(cascades_root, case_name, file_name, ".gen")
@@ -62,7 +62,7 @@ function balance_slack(cascades_root::String, case_name::String, oppt_dir_name::
     end
 
     perturbed_xbar_arr[slack_idx] -= perturbed_sum
-    @assert sum(perturbed_xbar_arr) - sum(xbar_arr) <= 1e-10
+    @assert sum(perturbed_xbar_arr) - sum(xbar_arr) <= err
     return perturbed_xbar_arr
 end
 
