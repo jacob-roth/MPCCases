@@ -116,9 +116,9 @@ function load_case(read_file_path::String, base_file_name::String, aux_file_name
 end
 
 # For loading cases without composing composite files
-function load_case(case_name::String, case_path::String, lineOff::Line=Line(); other::Bool=true, baseMVA::Int=100, T::Type=Float64)
+function load_case(file_name::String, file_path::String, lineOff::Line=Line(); other::Bool=true, baseMVA::Int=100, T::Type=Float64)
   base_files = Dict{String, Array}()
-  completed_base_files = complete_base_files(base_files, case_path, case_name, T=T)
+  completed_base_files = complete_base_files(base_files, file_path, file_name, T=T)
   return load_case(completed_base_files, lineOff, other=other, baseMVA=baseMVA, T=T)
 end
 
