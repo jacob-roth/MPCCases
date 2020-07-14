@@ -62,7 +62,7 @@ function balance_slack(cascades_root::String, case_name::String, oppt_dir_name::
     end
 
     perturbed_xbar_arr[slack_idx] -= perturbed_sum
-    @assert sum(perturbed_xbar_arr) - sum(xbar_arr) <= err
+    @assert abs(sum(perturbed_xbar_arr) - sum(xbar_arr)) <= err
     return perturbed_xbar_arr
 end
 
