@@ -1,3 +1,5 @@
+# Aggregate the ranks from multiple vectors
+
 function get_idx_arr(idx...)
     lengths = map(length, idx)
     @assert all(x -> x == first(lengths), lengths) == true
