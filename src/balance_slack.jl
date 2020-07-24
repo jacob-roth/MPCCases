@@ -23,6 +23,10 @@ function get_perturbed_xbar_arr(cascades_root::String, case_name::String, oppt_d
         max_delta_val = max_delta_prop * agg_xbar_arr
         scaled_xbar_arr = xbar_arr .* scale_fac
         perturbed_xbar_arr = scaled_xbar_arr .* (scaled_xbar_arr .<= max_delta_val) + (max_delta_val * (scaled_xbar_arr .>= max_delta_val))
+    elseif (isnothing(mean) & isnothing(sd)) & isnothing(scale_fac) & !isnothing(max_delta_prop)
+        agg_xbar_arr = sum_xbar_arr(xbar_arr, idx_arr=idx_arr)
+        max_delta_val = max_delta_prop * agg_xbar_arr
+        perturbed_xbar_arr = xbar_arr .* (xbar_arr .<= max_delta_val) + (max_delta_val * (xbar_arr .>= max_delta_val))
     else 
         throw(DomainError("Perturbation parameters are not properly defined."))
     end 
