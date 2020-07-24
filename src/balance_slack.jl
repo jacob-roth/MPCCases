@@ -44,8 +44,9 @@ end
 function balance_slack(cascades_root::String, case_name::String, oppt_dir_name::String, sol_file_name::String, file_name::String;
                        start_x_idx::Int=1, y_idx::Union{Nothing, Vector{Int}}=nothing, 
                        mean::Union{Nothing, Int, Float64}=nothing, sd::Union{Nothing, Int, Float64}=nothing, 
-                       scale_fac::Union{Nothing, Int, Float64}=nothing,
-                       discard_neg_vals::Bool=true, seed::Union{Nothing, Int}=nothing, err::Real=1e-9)
+                       scale_fac::Union{Nothing, Int, Float64}=nothing, max_delta_prop::Union{Nothing, Int, Float64}=nothing,
+                       discard_neg_vals::Bool=true, idx_arr::Union{Nothing, Vector{Int}}=nothing, 
+                       seed::Union{Nothing, Int}=nothing, err::Real=1e-9)
     slack_bus_type = 3
     slack_id = Int(first(get_bus_id(cascades_root, case_name, file_name, slack_bus_type)))
     gen_arr = get_case_arr(cascades_root, case_name, file_name, ".gen")
@@ -56,7 +57,9 @@ function balance_slack(cascades_root::String, case_name::String, oppt_dir_name::
     xbar_arr = get_xbar_arr(cascades_root, case_name, oppt_dir_name, sol_file_name)
     perturbed_xbar_arr = get_perturbed_xbar_arr(cascades_root, case_name, oppt_dir_name, sol_file_name,
                                                 start_x_idx=start_x_idx, y_idx=y_idx, mean=mean, sd=sd, 
-                                                scale_fac=scale_fac, discard_neg_vals=discard_neg_vals, seed=seed)
+                                                scale_fac=scale_fac, max_delta_prop=max_delta_prop,
+                                                discard_neg_vals=discard_neg_vals, idx_arr=idx_arr,
+                                                seed=seed)
 
     perturbed_slack = perturbed_xbar_arr[slack_idx]
     perturbed_sum = sum(perturbed_xbar_arr - xbar_arr)
