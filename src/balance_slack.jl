@@ -3,19 +3,26 @@
 function get_perturbed_xbar_arr(cascades_root::String, case_name::String, oppt_dir_name::String, sol_file_name::String; 
                                 start_x_idx::Int=1, y_idx::Union{Nothing, Vector{Int}}=nothing, 
                                 mean::Union{Nothing, Int, Float64}=nothing, sd::Union{Nothing, Int, Float64}=nothing, 
-                                scale_fac::Union{Nothing, Int, Float64}=nothing,
-                                discard_neg_vals::Bool=true, seed::Union{Nothing, Int}=nothing)
+                                scale_fac::Union{Nothing, Int, Float64}=nothing, max_delta_prop::Union{Nothing, Int, Float64}=nothing,
+                                discard_neg_vals::Bool=true, idx_arr::Union{Nothing, Vector{Int}}=nothing,
+                                seed::Union{Nothing, Int}=nothing)
     if !isnothing(scale_fac)
         @assert scale_fac >= 0
     end
 
     xbar_arr = get_xbar_arr(cascades_root, case_name, oppt_dir_name, sol_file_name)
-    if (isnothing(mean) & isnothing(sd)) & isnothing(scale_fac)
+
+    if (isnothing(mean) & isnothing(sd)) & isnothing(scale_fac) & isnothing(max_delta_prop)
         perturbed_xbar_arr = xbar_arr 
-    elseif (!isnothing(mean) & !isnothing(sd)) & isnothing(scale_fac)
+    elseif (!isnothing(mean) & !isnothing(sd)) & isnothing(scale_fac) & isnothing(max_delta_prop)
         perturbed_xbar_arr = add_gaussian_noise(xbar_arr, mean, sd, seed)
-    elseif (isnothing(mean) & isnothing(sd)) & !isnothing(scale_fac)
+    elseif (isnothing(mean) & isnothing(sd)) & !isnothing(scale_fac) & isnothing(max_delta_prop)
         perturbed_xbar_arr = xbar_arr .* scale_fac
+    elseif (isnothing(mean) & isnothing(sd)) & !isnothing(scale_fac) & !isnothing(max_delta_prop)
+        agg_xbar_arr = sum_xbar_arr(xbar_arr, idx_arr=idx_arr)
+        max_delta_val = max_delta_prop * agg_xbar_arr
+        scaled_xbar_arr = xbar_arr .* scale_fac
+        perturbed_xbar_arr = scaled_xbar_arr .* (scaled_xbar_arr .<= max_delta_val) + (max_delta_val * (scaled_xbar_arr .>= max_delta_val))
     else 
         throw(DomainError("Perturbation parameters are not properly defined."))
     end 
@@ -24,15 +31,14 @@ function get_perturbed_xbar_arr(cascades_root::String, case_name::String, oppt_d
     return abs_perturbed_xbar_arr
 end
 
-function get_bus_id(cascades_root::String, case_name::String, file_name::String, bus_type::Int)
-    path_dict = get_path_dict(cascades_root, case_name)
-    bus_arr = readdlm(path_dict[:casedata_path] * file_name * ".bus")
-    bus_idx = findall(x -> x == bus_type, bus_arr[:, 2])
-    if bus_type == 3
-        @assert length(bus_idx) == 1
+function sum_xbar_arr(xbar_arr::VecOrMat{<:Real}; idx_arr::Union{Nothing, Vector{Int}}=nothing)
+    if isa(xbar_arr, Vector{<:Real})
+        return sum(xbar_arr)
+    elseif !isnothing(idx_arr)
+        return sum(xbar_arr[idx_arr])
+    else
+        throw(DomainError("idx_arr is not properly defined."))
     end
-    bus_id = bus_arr[bus_idx, 1]
-    return bus_id
 end
 
 function balance_slack(cascades_root::String, case_name::String, oppt_dir_name::String, sol_file_name::String, file_name::String;
@@ -64,6 +70,17 @@ function balance_slack(cascades_root::String, case_name::String, oppt_dir_name::
     perturbed_xbar_arr[slack_idx] -= perturbed_sum
     @assert abs(sum(perturbed_xbar_arr) - sum(xbar_arr)) <= err
     return perturbed_xbar_arr
+end
+
+function get_bus_id(cascades_root::String, case_name::String, file_name::String, bus_type::Int)
+    path_dict = get_path_dict(cascades_root, case_name)
+    bus_arr = readdlm(path_dict[:casedata_path] * file_name * ".bus")
+    bus_idx = findall(x -> x == bus_type, bus_arr[:, 2])
+    if bus_type == 3
+        @assert length(bus_idx) == 1
+    end
+    bus_id = bus_arr[bus_idx, 1]
+    return bus_id
 end
 
 function write_perturbed_Pg_file(cascades_root::String, case_name::String, oppt_dir_name::String, 
