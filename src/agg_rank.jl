@@ -11,7 +11,7 @@ function get_idx_arr(idx...)
 end
 
 function get_rank_arr(idx...)
-    idx_arr = get_idx_arr(idx)
+    idx_arr = get_idx_arr(idx...)
     rank_arr = similar(idx_arr)
     for i in 1:size(idx_arr, 1)
         for j in 1:size(idx_arr, 2)
@@ -22,12 +22,12 @@ function get_rank_arr(idx...)
 end
 
 function get_agg_rank_arr(idx...)
-    rank_arr = get_rank_arr(idx)
+    rank_arr = get_rank_arr(idx...)
     agg_rank_arr = sum(rank_arr, dims=1) ./ size(rank_arr, 1)
     return agg_rank_arr
 end
 
 function get_agg_rank_perm(idx...)
-    agg_rank_arr = get_agg_rank_arr(idx)
+    agg_rank_arr = get_agg_rank_arr(idx...)
     return sortperm(vec(agg_rank_arr))
 end
