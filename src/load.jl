@@ -83,7 +83,8 @@ mutable struct CaseData
   phys::Array{Phys,1}
 end
 
-function load_case(completed_base_files::Dict, lineOff::Line=Line(); other::Bool=true, baseMVA::Int=100, T::Type=Float64)
+function load_case(completed_base_files::Dict, lineOff::Line=Line(); 
+                   other::Bool=true, baseMVA::Int=100, T::Type=Float64)
   buses, bus_ref = load_buses(completed_base_files)
   lines = load_branches(completed_base_files, lineOff=lineOff)
   generators = load_generators(completed_base_files, baseMVA)
@@ -109,14 +110,16 @@ function load_case(completed_base_files::Dict, lineOff::Line=Line(); other::Bool
 end
 
 # For loading cases with composing composite files
-function load_case(read_file_path::String, base_file_name::String, aux_file_name::Union{String, NTuple{N, String}}, file_ext::Union{String, NTuple{N, String}}, lineOff::Line=Line(); other::Bool=true, baseMVA::Int=100, T::Type=Float64) where {N}
+function load_case(read_file_path::String, base_file_name::String, aux_file_name::Union{String, NTuple{N, String}}, file_ext::Union{String, NTuple{N, String}}, lineOff::Line=Line(); 
+                   other::Bool=true, baseMVA::Int=100, T::Type=Float64) where {N}
   base_files = compose_file(read_file_path, base_file_name, aux_file_name, file_ext, T=T)
   completed_base_files = complete_base_files(base_files, read_file_path, base_file_name, T=T)
   return load_case(completed_base_files, lineOff, other=other, baseMVA=baseMVA, T=T)
 end
 
 # For loading cases without composing composite files
-function load_case(file_name::String, file_path::String, lineOff::Line=Line(); other::Bool=true, baseMVA::Int=100, T::Type=Float64)
+function load_case(file_name::String, file_path::String, lineOff::Line=Line(); 
+                   other::Bool=true, baseMVA::Int=100, T::Type=Float64)
   base_files = Dict{String, Array}()
   completed_base_files = complete_base_files(base_files, file_path, file_name, T=T)
   return load_case(completed_base_files, lineOff, other=other, baseMVA=baseMVA, T=T)

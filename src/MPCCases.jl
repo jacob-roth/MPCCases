@@ -33,6 +33,9 @@ export get_idx_arr, get_rank_arr, get_agg_rank_arr, get_agg_rank_perm
 include("map_id.jl")
 export apply_mapping_to_file
 
+include("sample_contingencies.jl")
+export get_initial_failed_line_id, get_second_failed_line_id
+
 include("util.jl")
 export complete_file_path, complete_base_files
 export get_y_idx, get_write_cols_idx, fill_write_file_path, match_length, cp_remaining_files
