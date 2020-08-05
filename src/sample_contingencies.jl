@@ -56,13 +56,12 @@ function add_bus_to_tree(bus_tree::Array{Union{Nothing, Array{Int}}}, from_bus::
     end
 end
 
-function add_bus_as_neighbour(neigbour_dict::Dict{Int, Array{Int}}, 
-                              distance_key::Int, 
-                              target_bus_id::Int)
+function add_bus_as_neighbour(neigbour_dict::Dict{Int, Array{Tuple{Int,Int}}}, distance_key::Int, target_bus_id::Int, parent_bus_id::Int)
+    bus_pair = parent_bus_id < target_bus_id ? (parent_bus_id, target_bus_id) : (target_bus_id, parent_bus_id)
     if !(haskey(neigbour_dict, distance_key))
-        return [target_bus_id]
+        return [bus_pair]
     else
-        return unique(cat(neigbour_dict[distance_key], target_bus_id, dims=1))
+        return unique(cat(neigbour_dict[distance_key], bus_pair, dims=1))
     end
 end
 
@@ -79,25 +78,24 @@ function get_bus_tree(casedata::CaseData)
 end
 
 function dfs(distance::Int, target_bus_id::Int, bus_tree::Array{Union{Nothing, Array{Int}}};
-             neighbour_dict::Dict{Int, Array{Int}}=Dict{Int, Array{Int}}(), parent_bus_id::Int=-1, depth::Int=0)
+             neighbour_dict::Dict{Int, Array{Tuple{Int,Int}}}=Dict{Int, Array{Tuple{Int,Int}}}(), parent_bus_id::Int=-1, depth::Int=0)
     if distance <= -1
         return
     end
     
-    neighbour_dict[depth] = add_bus_as_neighbour(neighbour_dict, depth, target_bus_id)
+    neighbour_dict[depth] = add_bus_as_neighbour(neighbour_dict, depth, target_bus_id, parent_bus_id)
     for child_bus_id in bus_tree[target_bus_id]
         if child_bus_id != parent_bus_id
             depth += 1
             dfs(distance - 1, child_bus_id, bus_tree, 
-                neighbour_dict=neighbour_dict, 
-                parent_bus_id=target_bus_id, depth=depth)
+                neighbour_dict=neighbour_dict, parent_bus_id=target_bus_id, depth=depth)
             depth -= 1
         end
     end
     return neighbour_dict
 end
 
-function remove_cycled_ids(neighbour_dict::Dict{Int, Array{Int}})
+function remove_cycled_lines(neighbour_dict::Dict{Int, Array{Tuple{Int,Int}}})
     tmp_arr = []
     for distance in sort(collect(keys(neighbour_dict)))
         for child_bus in neighbour_dict[distance]
@@ -154,13 +152,13 @@ function get_children_of_failed_line(casedata::CaseData, failed_line_id::Int;
 
     children_dict = Dict{Tuple{Int, Int, Int}, Array{Tuple{Int,Int}}}()
     for failed_bus in collect(Iterators.flatten(values(failed_line)))
-        neighbour_dict = remove_cycled_ids(dfs(distance, failed_bus, bus_tree))
+        neighbour_dict = remove_cycled_lines(dfs(distance, failed_bus, bus_tree))
         if recursive
             for depth in setdiff(keys(neighbour_dict), 0)
-                children_dict[(failed_line_id, failed_bus, depth)] = [failed_bus < neighbour_dict[depth][idx] ? (failed_bus, neighbour_dict[depth][idx]) : (neighbour_dict[depth][idx], failed_bus) for idx in eachindex(neighbour_dict[depth])]
+                children_dict[(failed_line_id, failed_bus, depth)] = [neighbour_dict[depth][idx] for idx in eachindex(neighbour_dict[depth])]
             end
         else
-            children_dict[(failed_line_id, failed_bus, distance)] = [failed_bus < neighbour_dict[distance][idx] ? (failed_bus, neighbour_dict[distance][idx]) : (neighbour_dict[distance][idx], failed_bus) for idx in eachindex(neighbour_dict[distance])]
+            children_dict[(failed_line_id, failed_bus, distance)] = [neighbour_dict[distance][idx] for idx in eachindex(neighbour_dict[distance])]
         end
     end
     return children_dict
@@ -176,12 +174,18 @@ function remove_already_failed_line(children_dict::Dict{Tuple{Int, Int, Int}, Ar
     return children_dict
 end
 
-function match_to_line_id(rev_line_bus_pairs::Dict{Tuple{Int, Int}, Int}, children_dict::Dict{Tuple{Int, Int, Int}, Array{Tuple{Int,Int}}})
-    line_id_arr = []
-    for lines in collect(Iterators.flatten(values(children_dict)))
-        line_id_arr = cat(line_id_arr, rev_line_bus_pairs[lines], dims=1)
+function match_to_line_id(children_dict::Dict{Tuple{Int, Int, Int}, Array{Tuple{Int,Int}}}, rev_line_bus_pairs::Dict{Tuple{Int, Int}, Int})
+    line_id_dict = Dict{Int, Array{Int}}()
+    for (line_id, bus_id, depth) in keys(children_dict)
+        for bus_pair in children_dict[(line_id, bus_id, depth)]
+            if !(haskey(line_id_dict, depth))
+                line_id_dict[depth] = [rev_line_bus_pairs[bus_pair]]
+            else
+                line_id_dict[depth] = cat(line_id_dict[depth], rev_line_bus_pairs[bus_pair], dims=1)
+            end
+        end
     end
-    return unique(line_id_arr)
+    return line_id_dict
 end
     
 function get_second_failed_line_id(casedata::CaseData, initial_failed_line_id::Int;
@@ -189,6 +193,8 @@ function get_second_failed_line_id(casedata::CaseData, initial_failed_line_id::I
     children_dict = get_children_of_failed_line(casedata, initial_failed_line_id, distance=distance, recursive=recursive)
     valid_children_dict = remove_already_failed_line(children_dict, initial_failed_line_id)
     rev_line_bus_pairs = get_line_bus_pairs(casedata, reverse_dict=true)
-    valid_lines = match_to_line_id(rev_line_bus_pairs, valid_children_dict)
+    valid_lines = match_to_line_id(valid_children_dict, rev_line_bus_pairs)
     return valid_lines
 end
+
+# s::Union{Int,Float64}, N::Int, k::Union{UnitRange{Int},Int}
