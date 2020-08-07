@@ -196,7 +196,7 @@ function get_children_of_failed_line(casedata::CaseData, failed_line_id::Int, di
     return children_dict
 end
 
-function remove_already_failed_line(children_dict::Dict{Tuple{Int, Int, Int}, Array{Tuple{Int,Int}}}, failed_line_id::Int)
+function remove_already_failed_line(casedata::CaseData, children_dict::Dict{Tuple{Int, Int, Int}, Array{Tuple{Int,Int}}}, failed_line_id::Int)
     failed_bus_pair = first(values(get_line_bus_pairs(casedata, failed_line_id, reverse_dict=false)))
     for (key, line_arr) in children_dict
         if failed_bus_pair ∈ line_arr
@@ -224,7 +224,7 @@ function get_second_failed_line_id(casedata::CaseData, initial_failed_line_id::I
                                    s::Union{Int,Float64}, distance::Int;
                                    recursive::Bool=true, seed::Union{Nothing, Int}=nothing)
     children_dict = get_children_of_failed_line(casedata, initial_failed_line_id, distance, recursive=recursive)
-    valid_children_dict = remove_already_failed_line(children_dict, initial_failed_line_id)
+    valid_children_dict = remove_already_failed_line(casedata, children_dict, initial_failed_line_id)
     rev_line_bus_pairs = get_line_bus_pairs(casedata, reverse_dict=true)
     valid_lines = remove_cycled_lines(match_to_line_id(valid_children_dict, rev_line_bus_pairs))
 
