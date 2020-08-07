@@ -2,6 +2,7 @@ module MPCCases
 using DelimitedFiles, StructArrays
 using SparseArrays
 using Random
+using JSON
 ## based on: https://github.com/StructJuMP/StructJuMP.jl/tree/master/examples/PowerGrid
 
 include("load.jl")

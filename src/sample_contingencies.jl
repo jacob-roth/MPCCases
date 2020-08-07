@@ -132,7 +132,7 @@ function dfs(distance::Int, target_bus_id::Int, bus_tree::Array{Union{Nothing, A
              neighbour_dict::Dict{Int, Array{Tuple{Int,Int}}}=Dict{Int, Array{Tuple{Int,Int}}}(), 
              parent_bus_id::Int=-1, depth::Int=0)
     if distance <= -1
-        return
+        return nothing
     end
     
     neighbour_dict[depth] = add_bus_as_neighbour(neighbour_dict, depth, target_bus_id, parent_bus_id)
@@ -248,4 +248,12 @@ function get_second_failed_line_id(casedata::CaseData, initial_failed_line_id::I
     line_unif_rv = get_unif_rv(1, num_candidate_lines, seed=line_seed)
     second_failed_line_id = candidate_lines[line_unif_rv]
     return second_failed_line_id
+end
+
+function load_children_dict(path_to_children_dict::String)
+    open(path_to_children_dict, "r") do io
+        json_file = read(io, String)
+        children_dict = JSON.parse(json_file)
+    end
+    return children_dict
 end
