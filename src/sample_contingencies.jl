@@ -222,8 +222,14 @@ end
 
 function get_second_failed_line_id(casedata::CaseData, initial_failed_line_id::Int, 
                                    s::Union{Int,Float64}, distance::Int;
-                                   recursive::Bool=true, seed::Union{Nothing, Int}=nothing)
+                                   recursive::Bool=true, seed::Union{Nothing, Int}=nothing, 
+                                   save_dict::Bool=false, path_to_children_dict::String="", 
+                                   overwrite_file::Bool=true, write_file_path::String="")
     children_dict = get_children_of_failed_line(casedata, initial_failed_line_id, distance, recursive=recursive)
+    if save_dict
+        save_children_dict(children_dict, path_to_children_dict, overwrite_file=overwrite_file, write_file_path=write_file_path)
+    end
+
     valid_children_dict = remove_already_failed_line(casedata, children_dict, initial_failed_line_id)
     rev_line_bus_pairs = get_line_bus_pairs(casedata, reverse_dict=true)
     valid_lines = remove_cycled_lines(match_to_line_id(valid_children_dict, rev_line_bus_pairs))
@@ -250,10 +256,67 @@ function get_second_failed_line_id(casedata::CaseData, initial_failed_line_id::I
     return second_failed_line_id
 end
 
-function load_children_dict(path_to_children_dict::String)
-    open(path_to_children_dict, "r") do io
-        json_file = read(io, String)
-        children_dict = JSON.parse(json_file)
+function key_to_tuple(string::String)
+    endless_string = filter(x -> x ∉ Set(['(', ')']), string)
+    string_arr = [parse(Int, str) for str in split(endless_string, ',')]
+    string_tuple = Tuple(string_arr)
+    return string_tuple
+end
+
+function value_to_tuple_array(value::Array{Any})
+    val_arr = [Tuple{Int, Int}(val_pair) for val_pair in value]
+    return val_arr
+end
+
+function convert_children_dict(json_dict::Dict{String, Any})
+    children_dict = Dict{Tuple{Int, Int, Int}, Array{Tuple{Int, Int}}}()
+    for (key, value) in json_dict
+        key_tuple = key_to_tuple(key)
+        value_arr = value_to_tuple_array(value)
+        children_dict[key_tuple] = value_arr
     end
     return children_dict
+end
+
+function load_children_dict(path_to_children_dict::String)
+    json_dict = Dict()
+    open(path_to_children_dict, "r") do io
+        json_file = read(io, String)
+        json_dict = JSON.parse(json_file)
+    end
+    return json_dict
+end
+
+function cat_to_existing_dict(curr_children_dict::Dict{Tuple{Int, Int, Int}, Array{Tuple{Int,Int}}}, 
+                              path_to_children_dict::String)
+    if isnothing(path_to_children_dict)
+        return curr_children_dict
+    end
+    existing_children_dict = convert_children_dict(load_children_dict(path_to_children_dict))
+    for key in keys(curr_children_dict)
+        if !(haskey(existing_children_dict, key))
+            existing_children_dict[key] = curr_children_dict[key]
+        end
+    end
+    return existing_children_dict
+end
+
+function save_children_dict(curr_children_dict::Dict{Tuple{Int, Int, Int}, Array{Tuple{Int,Int}}}, 
+                            path_to_children_dict::String; 
+                            overwrite_file::Bool=true, write_file_path::String="")
+    children_dict = cat_to_existing_dict(curr_children_dict, path_to_children_dict)
+    json_data = JSON.json(children_dict)
+    if overwrite_file
+        open(path_to_children_dict, "w") do io
+            write(io, json_data)
+        end
+    else
+        if !(isnothing(write_file_path))
+            open(write_file_path, "w") do io
+                write(io, json_data)
+            end
+        else
+            throw(UndefKeywordError("write_file_path not defined"))
+        end
+    end
 end
