@@ -196,7 +196,7 @@ function get_children_of_failed_line(casedata::CaseData, failed_line_id::Int, di
     return children_dict
 end
 
-function remove_already_failed_line(casedata::CaseData, children_dict::Dict{Tuple{Int, Int, Int}, Array{Tuple{Int,Int}}}, failed_line_id::Int)
+function remove_already_failed_line(casedata::CaseData, children_dict::Dict{Tuple{Int, Int, Int}, Array{Tuple{Int, Int}}}, failed_line_id::Int)
     failed_bus_pair = first(values(get_line_bus_pairs(casedata, failed_line_id, reverse_dict=false)))
     for (key, line_arr) in children_dict
         if failed_bus_pair ∈ line_arr
@@ -206,7 +206,7 @@ function remove_already_failed_line(casedata::CaseData, children_dict::Dict{Tupl
     return children_dict
 end
 
-function match_to_line_id(children_dict::Dict{Tuple{Int, Int, Int}, Array{Tuple{Int,Int}}}, rev_line_bus_pairs::Dict{Tuple{Int, Int}, Int})
+function match_to_line_id(children_dict::Dict{Tuple{Int, Int, Int}, Array{Tuple{Int, Int}}}, rev_line_bus_pairs::Dict{Tuple{Int, Int}, Int})
     line_id_dict = Dict{Int, Array{Int}}()
     for (line_id, bus_id, depth) in keys(children_dict)
         for bus_pair in children_dict[(line_id, bus_id, depth)]
@@ -220,12 +220,31 @@ function match_to_line_id(children_dict::Dict{Tuple{Int, Int, Int}, Array{Tuple{
     return line_id_dict
 end
 
-function get_second_failed_line_id(casedata::CaseData, initial_failed_line_id::Int, 
-                                   s::Union{Int,Float64}, distance::Int;
-                                   recursive::Bool=true, seed::Union{Nothing, Int}=nothing, 
-                                   save_dict::Bool=false, path_to_children_dict::String="", 
-                                   overwrite_file::Bool=true, write_file_path::String="")
-    children_dict = get_children_of_failed_line(casedata, initial_failed_line_id, distance, recursive=recursive)
+function get_second_failed_line_id(casedata::CaseData, initial_failed_line_id::Int, s::Union{Int,Float64}, distance::Int;
+                                   recursive::Bool=true, seed::Union{Nothing, Int}=nothing, load_dict::Bool=true, save_dict::Bool=false, 
+                                   path_to_children_dict::String="", overwrite_file::Bool=true, write_file_path::String="")
+    if load_dict
+        children_dict = convert_children_dict(load_children_dict(path_to_children_dict))
+        bus_ids = get_bus_ids(casedata, initial_failed_line_id)
+        if recursive
+            for recursive_distance in 1:distance
+                for bus_id in bus_ids
+                    if (initial_failed_line_id, bus_id, recursive_distance) ∉ keys(children_dict)
+                        children_dict = add_to_loaded_dict(casedata, initial_failed_line_id, recursive_distance, children_dict)
+                    end
+                end
+            end
+        else
+            for bus_id in bus_ids
+                if (initial_failed_line_id, bus_id, distance) ∉ keys(children_dict)
+                    children_dict = add_to_loaded_dict(casedata, initial_failed_line_id, distance, children_dict)
+                end
+            end
+        end
+    else
+        children_dict = get_children_of_failed_line(casedata, initial_failed_line_id, distance, recursive=recursive)
+    end
+    
     if save_dict
         save_children_dict(children_dict, path_to_children_dict, overwrite_file=overwrite_file, write_file_path=write_file_path)
     end
@@ -285,6 +304,18 @@ function load_children_dict(path_to_children_dict::String)
         json_dict = JSON.parse(json_file)
     end
     return json_dict
+end
+
+function add_to_loaded_dict(casedata::CaseData, initial_failed_line_id::Int, distance::Int,
+                            loaded_children_dict::Dict{Tuple{Int, Int, Int}, Array{Tuple{Int,Int}}})
+    loaded_children_dict_cp = copy(loaded_children_dict)
+    tmp_dict = get_children_of_failed_line(casedata, initial_failed_line_id, distance, recursive=false)
+    for key in keys(tmp_dict)
+        if !(haskey(loaded_children_dict, key))
+            loaded_children_dict_cp[key] = tmp_dict[key]
+        end
+    end
+    return loaded_children_dict_cp
 end
 
 function cat_to_existing_dict(curr_children_dict::Dict{Tuple{Int, Int, Int}, Array{Tuple{Int,Int}}}, 
