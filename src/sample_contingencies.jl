@@ -226,19 +226,9 @@ function get_second_failed_line_id(casedata::CaseData, initial_failed_line_id::I
     if load_dict
         children_dict = convert_children_dict(load_children_dict(path_to_children_dict))
         bus_ids = get_bus_ids(casedata, initial_failed_line_id)
-        if recursive
-            for recursive_distance in 1:distance
-                for bus_id in bus_ids
-                    if (initial_failed_line_id, bus_id, recursive_distance) ∉ keys(children_dict)
-                        children_dict = add_to_loaded_dict(casedata, initial_failed_line_id, recursive_distance, children_dict)
-                    end
-                end
-            end
-        else
-            for bus_id in bus_ids
-                if (initial_failed_line_id, bus_id, distance) ∉ keys(children_dict)
-                    children_dict = add_to_loaded_dict(casedata, initial_failed_line_id, distance, children_dict)
-                end
+        for bus_id in bus_ids
+            if (initial_failed_line_id, bus_id, distance) ∉ keys(children_dict)
+                children_dict = add_to_loaded_dict(casedata, initial_failed_line_id, distance, children_dict)
             end
         end
     else
@@ -307,18 +297,18 @@ function load_children_dict(path_to_children_dict::String)
 end
 
 function add_to_loaded_dict(casedata::CaseData, initial_failed_line_id::Int, distance::Int,
-                            loaded_children_dict::Dict{Tuple{Int, Int, Int}, Array{Tuple{Int,Int}}})
+                            loaded_children_dict::Dict{Tuple{Int, Int, Int}, Array{Tuple{Int, Int}}})
     loaded_children_dict_cp = copy(loaded_children_dict)
-    tmp_dict = get_children_of_failed_line(casedata, initial_failed_line_id, distance, recursive=false)
+    tmp_dict = get_children_of_failed_line(casedata, initial_failed_line_id, distance, recursive=true)
     for key in keys(tmp_dict)
-        if !(haskey(loaded_children_dict, key))
+        if !(haskey(loaded_children_dict_cp, key))
             loaded_children_dict_cp[key] = tmp_dict[key]
         end
     end
     return loaded_children_dict_cp
 end
 
-function cat_to_existing_dict(curr_children_dict::Dict{Tuple{Int, Int, Int}, Array{Tuple{Int,Int}}}, 
+function cat_to_existing_dict(curr_children_dict::Dict{Tuple{Int, Int, Int}, Array{Tuple{Int, Int}}}, 
                               path_to_children_dict::String)
     if isnothing(path_to_children_dict)
         return curr_children_dict
@@ -332,7 +322,7 @@ function cat_to_existing_dict(curr_children_dict::Dict{Tuple{Int, Int, Int}, Arr
     return existing_children_dict
 end
 
-function save_children_dict(curr_children_dict::Dict{Tuple{Int, Int, Int}, Array{Tuple{Int,Int}}}, 
+function save_children_dict(curr_children_dict::Dict{Tuple{Int, Int, Int}, Array{Tuple{Int, Int}}}, 
                             path_to_children_dict::String; 
                             overwrite_file::Bool=true, write_file_path::String="")
     children_dict = cat_to_existing_dict(curr_children_dict, path_to_children_dict)
