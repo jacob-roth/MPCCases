@@ -325,7 +325,7 @@ end
 
 function save_children_dict(curr_children_dict::Dict{Tuple{Int, Int, Int}, Array{Tuple{Int, Int}}}, 
                             path_to_children_dict::Union{Nothing, String}; 
-                            overwrite_file::Bool=true, write_file_path::String="")
+                            overwrite_file::Bool=true, write_file_path::Union{Nothing, String}=nothing)
     children_dict = cat_to_existing_dict(curr_children_dict, path_to_children_dict)
     json_data = JSON.json(children_dict)
     if overwrite_file
