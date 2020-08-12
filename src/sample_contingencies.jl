@@ -222,8 +222,9 @@ end
 
 function get_second_failed_line_id(casedata::CaseData, initial_failed_line_id::Int, s::Union{Int,Float64}, distance::Int;
                                    recursive::Bool=true, seed::Union{Nothing, Int}=nothing, load_dict::Bool=true, save_dict::Bool=false, 
-                                   path_to_children_dict::String="", overwrite_file::Bool=true, write_file_path::String="")
+                                   path_to_children_dict::Union{Nothing, String}=nothing, overwrite_file::Bool=true, write_file_path::Union{Nothing, String}=nothing)
     if load_dict
+        @assert !(isnothing(path_to_children_dict))
         children_dict = convert_children_dict(load_children_dict(path_to_children_dict))
         bus_ids = get_bus_ids(casedata, initial_failed_line_id)
         for bus_id in bus_ids
@@ -309,7 +310,7 @@ function add_to_loaded_dict(casedata::CaseData, initial_failed_line_id::Int, dis
 end
 
 function cat_to_existing_dict(curr_children_dict::Dict{Tuple{Int, Int, Int}, Array{Tuple{Int, Int}}}, 
-                              path_to_children_dict::String)
+                              path_to_children_dict::Union{Nothing, String})
     if isnothing(path_to_children_dict)
         return curr_children_dict
     end
@@ -323,7 +324,7 @@ function cat_to_existing_dict(curr_children_dict::Dict{Tuple{Int, Int, Int}, Arr
 end
 
 function save_children_dict(curr_children_dict::Dict{Tuple{Int, Int, Int}, Array{Tuple{Int, Int}}}, 
-                            path_to_children_dict::String; 
+                            path_to_children_dict::Union{Nothing, String}; 
                             overwrite_file::Bool=true, write_file_path::String="")
     children_dict = cat_to_existing_dict(curr_children_dict, path_to_children_dict)
     json_data = JSON.json(children_dict)
