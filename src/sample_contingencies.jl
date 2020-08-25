@@ -10,7 +10,7 @@ function get_num_buses(casedata::CaseData)
     return length(buses)
 end
 
-function get_unif_rv(a::Union{Nothing, Int}=nothing, b::Union{Nothing,Int}=nothing; 
+function get_unif_rv(a::Union{Nothing, Int}=nothing, b::Union{Nothing, Int}=nothing; 
                      dims::Union{Nothing, Int, NTuple{N, Int}}=nothing, 
                      seed::Union{Nothing, Int}=nothing) where {N}
     rng = isnothing(seed) ? MersenneTwister() : MersenneTwister(seed)
@@ -28,7 +28,7 @@ function get_initial_failed_line_id(casedata::CaseData;
     return failed_line_id
 end
 
-function get_zipf_pmf(s::Union{Int,Float64}, N::Int, k::Union{UnitRange{Int},Int})
+function get_zipf_pmf(s::Union{Int, Float64}, N::Int, k::Union{UnitRange{Int}, Int})
     @assert (s >= 0) & (N > 0)
     if isa(k, Int)
         @assert (1 <= k <= N)
@@ -41,7 +41,7 @@ function get_zipf_pmf(s::Union{Int,Float64}, N::Int, k::Union{UnitRange{Int},Int
     return zipf_pmf
 end
 
-function get_zipf_cdf(s::Union{Int,Float64}, N::Int, k::Union{UnitRange{Int},Int})
+function get_zipf_cdf(s::Union{Int, Float64}, N::Int, k::Union{UnitRange{Int}, Int})
     if isa(k, Int)
         zipf_cdf = sum([get_zipf_pmf(s, N, l) for l in 1:k])
     else
@@ -50,7 +50,7 @@ function get_zipf_cdf(s::Union{Int,Float64}, N::Int, k::Union{UnitRange{Int},Int
     return zipf_cdf
 end
 
-function get_zipf_dict(s::Union{Int,Float64}, N::Int, k::Union{UnitRange{Int},Int}; pmf_flag::Bool=true)
+function get_zipf_dict(s::Union{Int, Float64}, N::Int, k::Union{UnitRange{Int}, Int}; pmf_flag::Bool=true)
     zipf_arr = pmf_flag ? get_zipf_pmf(s, N, k) : get_zipf_cdf(s, N, k)
     zipf_dict = Dict{Int, Union{Int,Float64}}()
     if isa(k, Int)
@@ -107,7 +107,7 @@ function add_bus_to_tree(bus_tree::Array{Union{Nothing, Array{Int}}}, from_bus::
     end
 end
 
-function add_bus_as_neighbour(neigbour_dict::Dict{Int, Array{Tuple{Int,Int}}}, distance_key::Int, target_bus_id::Int, parent_bus_id::Int)
+function add_bus_as_neighbour(neigbour_dict::Dict{Int, Array{Tuple{Int, Int}}}, distance_key::Int, target_bus_id::Int, parent_bus_id::Int)
     bus_pair = parent_bus_id < target_bus_id ? (parent_bus_id, target_bus_id) : (target_bus_id, parent_bus_id)
     if !(haskey(neigbour_dict, distance_key))
         return [bus_pair]
@@ -129,7 +129,7 @@ function get_bus_tree(casedata::CaseData)
 end
 
 function dfs(distance::Int, target_bus_id::Int, bus_tree::Array{Union{Nothing, Array{Int}}};
-             neighbour_dict::Dict{Int, Array{Tuple{Int,Int}}}=Dict{Int, Array{Tuple{Int,Int}}}(), 
+             neighbour_dict::Dict{Int, Array{Tuple{Int, Int}}}=Dict{Int, Array{Tuple{Int, Int}}}(), 
              parent_bus_id::Int=-1, depth::Int=0)
     if distance <= -1
         return nothing
@@ -194,76 +194,6 @@ function get_children_of_failed_line(casedata::CaseData, failed_line_id::Int, di
         end
     end
     return children_dict
-end
-
-function remove_already_failed_line(casedata::CaseData, children_dict::Dict{Tuple{Int, Int, Int}, Array{Tuple{Int, Int}}}, failed_line_id::Int)
-    failed_bus_pair = first(values(get_line_bus_pairs(casedata, failed_line_id, reverse_dict=false)))
-    for (key, line_arr) in children_dict
-        if failed_bus_pair ∈ line_arr
-            children_dict[key] = filter(x -> x ≠ failed_bus_pair, line_arr)
-        end
-    end
-    return children_dict
-end
-
-function match_to_line_id(children_dict::Dict{Tuple{Int, Int, Int}, Array{Tuple{Int, Int}}}, rev_line_bus_pairs::Dict{Tuple{Int, Int}, Int})
-    line_id_dict = Dict{Int, Array{Int}}()
-    for (line_id, bus_id, depth) in keys(children_dict)
-        for bus_pair in children_dict[(line_id, bus_id, depth)]
-            if !(haskey(line_id_dict, depth))
-                line_id_dict[depth] = [rev_line_bus_pairs[bus_pair]]
-            else
-                line_id_dict[depth] = unique(cat(line_id_dict[depth], rev_line_bus_pairs[bus_pair], dims=1))
-            end
-        end
-    end
-    return line_id_dict
-end
-
-function get_second_failed_line_id(casedata::CaseData, initial_failed_line_id::Int, s::Union{Int,Float64}, distance::Int;
-                                   recursive::Bool=true, seed::Union{Nothing, Int}=nothing, load_dict::Bool=true, save_dict::Bool=false, 
-                                   path_to_children_dict::Union{Nothing, String}=nothing, overwrite_file::Bool=true, write_file_path::Union{Nothing, String}=nothing)
-    if load_dict
-        @assert !(isnothing(path_to_children_dict))
-        children_dict = convert_children_dict(load_children_dict(path_to_children_dict))
-        bus_ids = get_bus_ids(casedata, initial_failed_line_id)
-        for bus_id in bus_ids
-            if (initial_failed_line_id, bus_id, distance) ∉ keys(children_dict)
-                children_dict = add_to_loaded_dict(casedata, initial_failed_line_id, distance, children_dict)
-            end
-        end
-    else
-        children_dict = get_children_of_failed_line(casedata, initial_failed_line_id, distance, recursive=recursive)
-    end
-    
-    if save_dict
-        save_children_dict(children_dict, path_to_children_dict, overwrite_file=overwrite_file, write_file_path=write_file_path)
-    end
-
-    valid_children_dict = remove_already_failed_line(casedata, children_dict, initial_failed_line_id)
-    rev_line_bus_pairs = get_line_bus_pairs(casedata, reverse_dict=true)
-    valid_lines = remove_cycled_lines(match_to_line_id(valid_children_dict, rev_line_bus_pairs))
-
-    [@assert (1 <= k <= distance) for k in keys(valid_lines)]
-    cdf_prob_dict = get_zipf_dict(s, distance, 1:distance, pmf_flag=false)
-
-    rng = isnothing(seed) ? MersenneTwister() : MersenneTwister(seed)
-    distance_seed, line_seed = isnothing(seed) ? (nothing, nothing) : Tuple(abs.(rand(rng, Int, 2)))
-
-    distance_unif_rv = get_unif_rv(seed=distance_seed)
-    failing_bus_distance = 0
-    for depth in sort(collect(keys(cdf_prob_dict)))
-        if distance_unif_rv >= cdf_prob_dict[depth]
-            failing_bus_distance = depth
-        end
-    end
-    failing_bus_distance += 1
-
-    candidate_lines = valid_lines[failing_bus_distance]
-    num_candidate_lines = length(candidate_lines)
-    line_unif_rv = get_unif_rv(1, num_candidate_lines, seed=line_seed)
-    second_failed_line_id = candidate_lines[line_unif_rv]
-    return second_failed_line_id
 end
 
 function key_to_tuple(string::String)
@@ -341,4 +271,74 @@ function save_children_dict(curr_children_dict::Dict{Tuple{Int, Int, Int}, Array
             throw(UndefKeywordError("write_file_path not defined"))
         end
     end
+end
+
+function remove_already_failed_line(casedata::CaseData, children_dict::Dict{Tuple{Int, Int, Int}, Array{Tuple{Int, Int}}}, failed_line_id::Int)
+    failed_bus_pair = first(values(get_line_bus_pairs(casedata, failed_line_id, reverse_dict=false)))
+    for (key, line_arr) in children_dict
+        if failed_bus_pair ∈ line_arr
+            children_dict[key] = filter(x -> x ≠ failed_bus_pair, line_arr)
+        end
+    end
+    return children_dict
+end
+
+function match_to_line_id(children_dict::Dict{Tuple{Int, Int, Int}, Array{Tuple{Int, Int}}}, rev_line_bus_pairs::Dict{Tuple{Int, Int}, Int})
+    line_id_dict = Dict{Int, Array{Int}}()
+    for (line_id, bus_id, depth) in keys(children_dict)
+        for bus_pair in children_dict[(line_id, bus_id, depth)]
+            if !(haskey(line_id_dict, depth))
+                line_id_dict[depth] = [rev_line_bus_pairs[bus_pair]]
+            else
+                line_id_dict[depth] = unique(cat(line_id_dict[depth], rev_line_bus_pairs[bus_pair], dims=1))
+            end
+        end
+    end
+    return line_id_dict
+end
+
+function get_second_failed_line_id(casedata::CaseData, initial_failed_line_id::Int, s::Union{Int,Float64}, distance::Int;
+                                   recursive::Bool=true, seed::Union{Nothing, Int}=nothing, load_dict::Bool=true, save_dict::Bool=false, 
+                                   path_to_children_dict::Union{Nothing, String}=nothing, overwrite_file::Bool=true, write_file_path::Union{Nothing, String}=nothing)
+    if load_dict
+        @assert !(isnothing(path_to_children_dict))
+        children_dict = convert_children_dict(load_children_dict(path_to_children_dict))
+        bus_ids = get_bus_ids(casedata, initial_failed_line_id)
+        for bus_id in bus_ids
+            if (initial_failed_line_id, bus_id, distance) ∉ keys(children_dict)
+                children_dict = add_to_loaded_dict(casedata, initial_failed_line_id, distance, children_dict)
+            end
+        end
+    else
+        children_dict = get_children_of_failed_line(casedata, initial_failed_line_id, distance, recursive=recursive)
+    end
+    
+    if save_dict
+        save_children_dict(children_dict, path_to_children_dict, overwrite_file=overwrite_file, write_file_path=write_file_path)
+    end
+
+    valid_children_dict = remove_already_failed_line(casedata, children_dict, initial_failed_line_id)
+    rev_line_bus_pairs = get_line_bus_pairs(casedata, reverse_dict=true)
+    valid_lines = remove_cycled_lines(match_to_line_id(valid_children_dict, rev_line_bus_pairs))
+
+    [@assert (1 <= k <= distance) for k in keys(valid_lines)]
+    cdf_prob_dict = get_zipf_dict(s, distance, 1:distance, pmf_flag=false)
+
+    rng = isnothing(seed) ? MersenneTwister() : MersenneTwister(seed)
+    distance_seed, line_seed = isnothing(seed) ? (nothing, nothing) : Tuple(abs.(rand(rng, Int, 2)))
+
+    distance_unif_rv = get_unif_rv(seed=distance_seed)
+    failing_bus_distance = 0
+    for depth in sort(collect(keys(cdf_prob_dict)))
+        if distance_unif_rv >= cdf_prob_dict[depth]
+            failing_bus_distance = depth
+        end
+    end
+    failing_bus_distance += 1
+
+    candidate_lines = valid_lines[failing_bus_distance]
+    num_candidate_lines = length(candidate_lines)
+    line_unif_rv = get_unif_rv(1, num_candidate_lines, seed=line_seed)
+    second_failed_line_id = candidate_lines[line_unif_rv]
+    return second_failed_line_id
 end
