@@ -28,7 +28,7 @@ function get_initial_failed_line_id(casedata::CaseData;
     return failed_line_id
 end
 
-function get_zipf_pmf(s::Union{Int, Float64}, N::Int, k::Union{UnitRange{Int}, Int})
+function get_zipf_pmf(s::Real, N::Int, k::Union{UnitRange{Int}, Int})
     @assert (s >= 0) & (N > 0)
     if isa(k, Int)
         @assert (1 <= k <= N)
@@ -41,7 +41,7 @@ function get_zipf_pmf(s::Union{Int, Float64}, N::Int, k::Union{UnitRange{Int}, I
     return zipf_pmf
 end
 
-function get_zipf_cdf(s::Union{Int, Float64}, N::Int, k::Union{UnitRange{Int}, Int})
+function get_zipf_cdf(s::Real, N::Int, k::Union{UnitRange{Int}, Int})
     if isa(k, Int)
         zipf_cdf = sum([get_zipf_pmf(s, N, l) for l in 1:k])
     else
@@ -50,7 +50,7 @@ function get_zipf_cdf(s::Union{Int, Float64}, N::Int, k::Union{UnitRange{Int}, I
     return zipf_cdf
 end
 
-function get_zipf_dict(s::Union{Int, Float64}, N::Int, k::Union{UnitRange{Int}, Int}; pmf_flag::Bool=true)
+function get_zipf_dict(s::Real, N::Int, k::Union{UnitRange{Int}, Int}; pmf_flag::Bool=true)
     zipf_arr = pmf_flag ? get_zipf_pmf(s, N, k) : get_zipf_cdf(s, N, k)
     zipf_dict = Dict{Int, Union{Int,Float64}}()
     if isa(k, Int)
@@ -297,7 +297,7 @@ function match_to_line_id(children_dict::Dict{Tuple{Int, Int, Int}, Array{Tuple{
     return line_id_dict
 end
 
-function get_second_failed_line_id(casedata::CaseData, initial_failed_line_id::Int, s::Union{Int,Float64}, distance::Int;
+function get_second_failed_line_id(casedata::CaseData, initial_failed_line_id::Int, s::Real, distance::Int;
                                    recursive::Bool=true, seed::Union{Nothing, Int}=nothing, load_dict::Bool=true, save_dict::Bool=false, 
                                    path_to_children_dict::Union{Nothing, String}=nothing, overwrite_file::Bool=true, write_file_path::Union{Nothing, String}=nothing)
     if load_dict
@@ -340,5 +340,22 @@ function get_second_failed_line_id(casedata::CaseData, initial_failed_line_id::I
     num_candidate_lines = length(candidate_lines)
     line_unif_rv = get_unif_rv(1, num_candidate_lines, seed=line_seed)
     second_failed_line_id = candidate_lines[line_unif_rv]
+    return second_failed_line_id
+end
+
+function get_second_failed_line_id(casedata::CaseData, initial_failed_line_id::Array{Int}, s::Real, distance::Int;
+                                   recursive::Bool=true, seed::Union{Nothing, Int}=nothing, load_dict::Bool=true, save_dict::Bool=false, 
+                                   path_to_children_dict::Union{Nothing, String}=nothing, overwrite_file::Bool=true, write_file_path::Union{Nothing, String}=nothing)
+    second_failed_line_id = similar(initial_failed_line_id)
+    num_sets, num_cores = size(initial_failed_line_id, 1), size(initial_failed_line_id, 2)
+    for sets_idx in 1:num_sets
+        for cores_idx in 1:num_cores
+            failed_line_id = initial_failed_line_id[sets_idx, cores_idx]
+            second_failed_line_id[sets_idx, cores_idx] = get_second_failed_line_id(casedata, failed_line_id, s, distance, 
+                                                                                   recursive=recursive, seed=seed, load_dict=load_dict, save_dict=save_dict,
+                                                                                   path_to_children_dict=path_to_children_dict, overwrite_file=overwrite_file, 
+                                                                                   write_file_path=write_file_path)
+        end
+    end
     return second_failed_line_id
 end
