@@ -351,7 +351,7 @@ function get_second_failed_line_id(casedata::CaseData, initial_failed_line_id::A
     for sets_idx in 1:num_sets
         for cores_idx in 1:num_cores
             failed_line_id = initial_failed_line_id[sets_idx, cores_idx]
-            zipf_seed = ifnothing(seed) ? seed : seed[sets_idx, cores_idx]
+            zipf_seed = isnothing(seed) ? seed : seed[sets_idx, cores_idx]
             second_failed_line_id[sets_idx, cores_idx] = get_second_failed_line_id(casedata, failed_line_id, s, distance, 
                                                                                    recursive=recursive, seed=zipf_seed, load_dict=load_dict, save_dict=save_dict,
                                                                                    path_to_children_dict=path_to_children_dict, overwrite_file=overwrite_file, 
