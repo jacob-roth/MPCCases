@@ -379,7 +379,11 @@ function get_second_failed_line_id(casedata::CaseData, initial_failed_line_id::I
     failing_bus_distance += 1
 
     # If failing_bus_distance is not in valid_lines (say because of remove_cycled_lines), push mass to the next largest distance
-    while (failing_bus_distance ∉ keys(valid_lines)) | (length(valid_lines[failing_bus_distance]) == 0)
+    while (failing_bus_distance ∉ keys(valid_lines))
+        failing_bus_distance -= 1
+    end
+
+    while (length(valid_lines[failing_bus_distance]) == 0)
         failing_bus_distance -= 1
     end
 
