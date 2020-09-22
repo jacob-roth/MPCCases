@@ -378,6 +378,11 @@ function get_second_failed_line_id(casedata::CaseData, initial_failed_line_id::I
     end
     failing_bus_distance += 1
 
+    if failing_bus_distance ∉ keys(valid_lines)
+        println("valid_lines keys: ", keys(valid_lines))
+        println("valid_lines: ", valid_lines)
+    end
+
     # Get candidates lines which are failed_bus_distance away
     # The assertion should always be true now
     candidate_lines = valid_lines[failing_bus_distance]
