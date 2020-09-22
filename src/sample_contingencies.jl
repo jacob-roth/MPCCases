@@ -371,22 +371,20 @@ function get_second_failed_line_id(casedata::CaseData, initial_failed_line_id::I
     # Sample what the failed_bus_distance is using CDF of Zipf and Uniform distribution
     distance_unif_rv = get_unif_rv(seed=distance_seed)
     failing_bus_distance = 0
-    for depth in sort(collect(intersect(keys(cdf_prob_dict), keys(valid_lines))))
+    for depth in sort(collect(keys(cdf_prob_dict)))
         if distance_unif_rv >= cdf_prob_dict[depth]
             failing_bus_distance = depth
         end
     end
     failing_bus_distance += 1
 
-    if failing_bus_distance ∉ keys(valid_lines)
-        println("valid_lines keys: ", keys(valid_lines))
-        println("valid_lines: ", valid_lines)
+    # If failing_bus_distance is not in valid_lines (say because of remove_cycled_lines), push mass to the next largest distance
+    while (failing_bus_distance ∉ keys(valid_lines)) | (length(valid_lines[failing_bus_distance]) == 0)
+        failing_bus_distance -= 1
     end
 
     # Get candidates lines which are failed_bus_distance away
-    # The assertion should always be true now
     candidate_lines = valid_lines[failing_bus_distance]
-    @assert length(candidate_lines) > 0
     num_candidate_lines = length(candidate_lines)
 
     # Uniformly sample which line fails from the candidate lines
