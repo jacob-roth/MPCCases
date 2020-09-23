@@ -362,7 +362,8 @@ function get_second_failed_line_id(casedata::CaseData, initial_failed_line_id::I
 
     # Get Dictionary of CDFs for Zipf(s, distance, 1:distance)
     [@assert (1 <= k <= distance) for k in keys(valid_lines)]
-    cdf_prob_dict = get_zipf_dict(s, distance, 1:distance, pmf_flag=false)
+    N = min(maximum([k for k in keys(valid_lines) if length(valid_lines[k]) > 0]), distance)
+    cdf_prob_dict = get_zipf_dict(s, N, 1:N, pmf_flag=false)
 
     # Initialize seeds for distance and line
     rng = isnothing(seed) ? MersenneTwister() : MersenneTwister(seed)
@@ -377,15 +378,6 @@ function get_second_failed_line_id(casedata::CaseData, initial_failed_line_id::I
         end
     end
     failing_bus_distance += 1
-
-    # If failing_bus_distance is not in valid_lines (say because of remove_cycled_lines), push mass to the next largest distance
-    while (failing_bus_distance ∉ keys(valid_lines))
-        failing_bus_distance -= 1
-    end
-
-    while (length(valid_lines[failing_bus_distance]) == 0)
-        failing_bus_distance -= 1
-    end
 
     # Get candidates lines which are failed_bus_distance away
     candidate_lines = valid_lines[failing_bus_distance]
