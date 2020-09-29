@@ -26,7 +26,7 @@ function adj_params(read_file_path::String, file_name::String, file_ext::String,
 end
 
 # 2: Single file_ext, multi column, block value update for .bus and .gen (P,Q)
-function adj_params(read_file_path::String, file_name::String, file_ext::String,  P::Bool, Q::Bool, paste_vals::VecOrMat{<:Real}; 
+function adj_params(read_file_path::String, file_name::String, file_ext::String, P::Bool, Q::Bool, paste_vals::VecOrMat{<:Real}; 
                     start_x_idx::Int=1,  T::Type=Float64, mean::Union{Nothing, Real}=nothing, sd::Union{Nothing, Real}=nothing, 
                     overwrite_file::Bool=false, write_file_path::String="", write_file_name::String="", only_write_changed_cols::Bool=false, 
                     discard_neg_vals::Bool=true, seed::Union{Nothing, Int}=nothing)
