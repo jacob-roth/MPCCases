@@ -80,7 +80,7 @@ function get_paste_vals(read_file_path::String, file_name::String, file_ext::Str
         write_cols_idx = get_write_cols_idx(file_ext)
         return arr[:, write_cols_idx]
     else
-        arr[x_idx, y_idx] = prod_fac * arr[x_idx, y_idx] + add_fac
+        arr[x_idx, y_idx] = prod_fac * arr[x_idx, y_idx] .+ add_fac
         return arr[:, y_idx]
     end
 end
