@@ -1,7 +1,8 @@
-# Compose Case Columns
+# Compose Case Files with Column Files
 
 # 1: Compose file for single file_ext
-function compose_file(read_file_path::String, base_file_name::String, aux_file_name::String, file_ext::String; T::Type=Float64)
+function compose_file(read_file_path::String, base_file_name::String, aux_file_name::String, file_ext::String; 
+                      T::Type=Float64)
     read_file_path = complete_file_path(read_file_path)
     base_file = readdlm(read_file_path * base_file_name * file_ext, T)
     aux_cols = readdlm(read_file_path * aux_file_name * file_ext, T)
@@ -11,7 +12,8 @@ function compose_file(read_file_path::String, base_file_name::String, aux_file_n
 end
 
 # 2: Compose files for multiple file_exts
-function compose_file(read_file_path::String, base_file_name::String, aux_file_name::NTuple{N, String}, file_ext::NTuple{N,String}; T::Type=Float64) where {N}
+function compose_file(read_file_path::String, base_file_name::String, aux_file_name::NTuple{N, String}, file_ext::NTuple{N, String}; 
+                      T::Type=Float64) where {N}
     @assert file_ext == Tuple(unique(file_ext))
     base_files = Dict{String, Array}()
     for idx in 1:N
