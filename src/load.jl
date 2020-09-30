@@ -123,7 +123,9 @@ function load_case(read_file_path::String, base_file_name::String, aux_file_name
   # Cast base_files as a Dictionary for complete_base_files
   if cast_as_dict & isa(base_files, Array{<:Real})
     @assert isa(file_ext, String)
-    base_files = Dict([file_ext => base_files])
+    base_files_dict = Dict{String, Array}()
+    base_files_dict[file_ext] = base_files
+    base_files = base_files_dict
   end
 
   completed_base_files = complete_base_files(base_files, read_file_path, base_file_name, T=T)
