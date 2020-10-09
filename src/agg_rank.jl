@@ -1,4 +1,5 @@
 # Aggregate the ranks from multiple vectors
+# TODO: integrate with kmcsim_sensitivity.jl
 
 function get_idx_arr(idx...)
     lengths = map(length, idx)
