@@ -35,7 +35,7 @@ include("map_id.jl")
 export apply_mapping_to_file
 
 include("sample_contingencies.jl")
-export get_line_bus_pairs, get_initial_failed_line_id, get_second_failed_line_id
+export get_num_lines, get_line_bus_pairs, get_initial_failed_line_id, get_second_failed_line_id
 
 include("util.jl")
 export complete_file_path, complete_base_files
