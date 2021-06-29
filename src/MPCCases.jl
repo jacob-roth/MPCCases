@@ -37,6 +37,9 @@ export apply_mapping_to_file
 include("make_phys.jl")
 export make_phys
 
+include("pad_gen.jl")
+export pad_gen
+
 include("sample_contingencies.jl")
 export get_num_lines, get_line_bus_pairs, get_initial_failed_line_id, get_second_failed_line_id
 
