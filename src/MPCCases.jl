@@ -34,6 +34,9 @@ export get_idx_arr, get_rank_arr, get_agg_rank_arr, get_agg_rank_perm
 include("map_id.jl")
 export apply_mapping_to_file
 
+include("make_phys.jl")
+export make_phys
+
 include("sample_contingencies.jl")
 export get_num_lines, get_line_bus_pairs, get_initial_failed_line_id, get_second_failed_line_id
 
