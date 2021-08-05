@@ -190,17 +190,17 @@ function adj_params(read_file_path::String, file_name::String, file_ext::Union{S
         s = isa(sd..., Real) ? Real(sd...) : nothing
         if file_ext in [".bus", ".gen"]
             adj_params(read_file_path, file_name, file_ext, p, q, p_fac, a_fac, 
-                       start_x_idx=start_x_idx, T=T, mean=m, sd=s, 
+                       start_x_idx=start_x_idx, end_x_idx=end_x_idx, T=T, mean=m, sd=s, 
                        overwrite_file=overwrite_file, write_file_path=write_file_path, write_file_name=write_file_name, 
                        only_write_changed_cols=only_write_changed_cols, discard_neg_vals=discard_neg_vals, seed=seed)
         elseif file_ext == ".gencost"
             adj_params(read_file_path, file_name, file_ext, c2, c1, c0, p_fac, a_fac, 
-                       start_x_idx=start_x_idx, T=T, mean=m, sd=s, 
+                       start_x_idx=start_x_idx, end_x_idx=end_x_idx, T=T, mean=m, sd=s, 
                        overwrite_file=overwrite_file, write_file_path=write_file_path, write_file_name=write_file_name, 
                        only_write_changed_cols=only_write_changed_cols, discard_neg_vals=discard_neg_vals, seed=seed)
         elseif file_ext == ".branch"
             adj_params(read_file_path, file_name, file_ext, rateA, p_fac, a_fac, 
-                       start_x_idx=start_x_idx, T=T, mean=m, sd=s, 
+                       start_x_idx=start_x_idx, end_x_idx=end_x_idx, T=T, mean=m, sd=s, 
                        overwrite_file=overwrite_file, write_file_path=write_file_path, write_file_name=write_file_name, 
                        only_write_changed_cols=only_write_changed_cols, seed=seed)
         else
