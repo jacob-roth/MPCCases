@@ -1,12 +1,10 @@
-function apply_mapping_to_file(read_file_path::String, file_name::String, file_ext::String; overwrite_file::Bool=false, write_file_path::String="")
+function apply_mapping_to_file(read_file_path::String, file_name::String, file_ext::String; 
+                               overwrite_file::Bool=false, write_file_path::String="")
     mapping = get_id_mapping(read_file_path, file_name, ".bus")
     full_file_path = complete_file_path(read_file_path) * file_name * file_ext
     arr = readdlm(full_file_path)
     num_rows = size(arr, 1)
-    if file_ext == ".bus"
-        mapped_arr = [mapping[arr[idx, 1]] for idx in 1:num_rows]
-        arr[:,1] = mapped_arr
-    elseif file_ext == ".gen"
+    if file_ext in Set([".bus", ".gen", ".phys"])
         mapped_arr = [mapping[arr[idx, 1]] for idx in 1:num_rows]
         arr[:,1] = mapped_arr
     elseif file_ext == ".branch"
@@ -24,9 +22,10 @@ function apply_mapping_to_file(read_file_path::String, file_name::String, file_e
     end
 end
 
-function apply_mapping_to_file(read_file_path::String, file_name::String, file_ext:: Tuple{String, Vararg{String}}; overwrite_file::Bool=false, write_file_path::String="")
-    for file_e in file_ext
-        apply_mapping_to_file(read_file_path, file_name, file_e, overwrite_file=overwrite_file, write_file_path=write_file_path)
+function apply_mapping_to_file(read_file_path::String, file_name::String, file_exts:: Tuple{String, Vararg{String}}; 
+                               overwrite_file::Bool=false, write_file_path::String="")
+    for file_ext in file_exts
+        apply_mapping_to_file(read_file_path, file_name, file_ext, overwrite_file=overwrite_file, write_file_path=write_file_path)
     end
 end
 

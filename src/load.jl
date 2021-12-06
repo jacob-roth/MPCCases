@@ -83,7 +83,8 @@ mutable struct CaseData
   phys::Array{Phys,1}
 end
 
-function load_case(completed_base_files::Dict, lineOff::Line=Line(); other::Bool=true, baseMVA::Int=100, T::Type=Float64)
+function load_case(completed_base_files::Dict, lineOff::Line=Line(); 
+                   other::Bool=true, baseMVA::Int=100, T::Type=Float64)
   buses, bus_ref = load_buses(completed_base_files)
   lines = load_branches(completed_base_files, lineOff=lineOff)
   generators = load_generators(completed_base_files, baseMVA)
@@ -108,16 +109,34 @@ function load_case(completed_base_files::Dict, lineOff::Line=Line(); other::Bool
   end
 end
 
-function load_case(read_file_path::String, base_file_name::String, aux_file_name::Union{String, NTuple{N, String}}, file_ext::Union{String, NTuple{N, String}}, lineOff::Line=Line(); other::Bool=true, baseMVA::Int=100, T::Type=Float64) where {N}
+# For loading cases with composing composite files
+function load_case(read_file_path::String, base_file_name::String, aux_file_name::Union{String, NTuple{N, String}}, file_ext::Union{String, NTuple{N, String}}, lineOff::Line=Line(); 
+                   other::Bool=true, baseMVA::Int=100, T::Type=Float64, cast_as_dict::Bool=false) where {N}
   base_files = compose_file(read_file_path, base_file_name, aux_file_name, file_ext, T=T)
+  if isa(aux_file_name, String)
+    @assert isa(file_ext, String)
+  end
+  if isa(file_ext, String)
+    @assert isa(aux_file_name, String)
+  end
+
+  # Cast base_files as a Dictionary for complete_base_files
+  if cast_as_dict & isa(base_files, Array{<:Real})
+    @assert isa(file_ext, String)
+    base_files_dict = Dict{String, Array}()
+    base_files_dict[file_ext] = base_files
+    base_files = base_files_dict
+  end
+
   completed_base_files = complete_base_files(base_files, read_file_path, base_file_name, T=T)
   return load_case(completed_base_files, lineOff, other=other, baseMVA=baseMVA, T=T)
 end
 
-function load_case(case_name::String, case_path::String, lineOff::Line=Line(); other::Bool=true, baseMVA::Int=100, T::Type=Float64)
-  case_path = complete_file_path(case_path)
+# For loading cases without composing composite files
+function load_case(file_name::String, file_path::String, lineOff::Line=Line(); 
+                   other::Bool=true, baseMVA::Int=100, T::Type=Float64)
   base_files = Dict{String, Array}()
-  completed_base_files = complete_base_files(base_files, case_path, case_name, T=T)
+  completed_base_files = complete_base_files(base_files, file_path, file_name, T=T)
   return load_case(completed_base_files, lineOff, other=other, baseMVA=baseMVA, T=T)
 end
 
@@ -302,15 +321,4 @@ function mapGenersToBuses(opfdata::OPFData)
     end
   end
   return D
-end
-
-# complete the base_files dictionary if not composed
-function complete_base_files(base_files::Dict{String, Array}, file_path::String, file_name::String; T::Type=Float64)
-  file_exts = (".bus", ".branch", ".gen", ".gencost", ".phys")
-  for f_ext in file_exts
-    if !haskey(base_files, f_ext)
-      base_files[f_ext] = readdlm(file_path * file_name * f_ext, T)
-    end
-  end
-  return base_files
 end
