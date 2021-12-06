@@ -1,6 +1,6 @@
 function computeAdmitances(lines, buses, baseMVA;
     lossless::Bool=false, remove_Bshunt::Bool=false, remove_tap::Bool=false,
-    verb::Bool=false, loss_scale::AbstractFloat=1.0, nonneg_Bshunt::Bool=false)
+    verb::Bool=false, loss_scale::AbstractFloat=1.0, nonneg_Bshunt::Bool=false, nobus_Bshunt::Bool=false)
 
     """ note:
     (1) `remove_Bshunt` refers to both branch and bus shunts
@@ -75,7 +75,7 @@ function computeAdmitances(lines, buses, baseMVA;
                 println(Bs)
             end
         end
-        YshI[i] = (remove_Bshunt ? 0.0 : (Bs / baseMVA)) ## JR: remove bus shunt
+        YshI[i] = (remove_Bshunt ? 0.0 : (nobus_Bshunt ? 0.0 : Bs / baseMVA)) ## JR: remove bus shunt
         if i == 5 || i == 37
             println(YshI[i])
         end
@@ -112,21 +112,21 @@ function computeAdmitances(lines, buses, baseMVA;
 end
 
 function computeAdmitances(opfdata::OPFData;
-lossless::Bool=false, remove_Bshunt::Bool=false, remove_tap::Bool=false, verb::Bool=false, loss_scale::AbstractFloat=1.0, nonneg_Bshunt::Bool=false)
+lossless::Bool=false, remove_Bshunt::Bool=false, remove_tap::Bool=false, verb::Bool=false, loss_scale::AbstractFloat=1.0, nonneg_Bshunt::Bool=false, nobus_Bshunt::Bool=false)
 
     return computeAdmitances(opfdata.lines, opfdata.buses, opfdata.baseMVA; 
-    lossless=lossless, remove_Bshunt=remove_Bshunt, remove_tap=remove_tap, verb=verb, loss_scale=loss_scale, nonneg_Bshunt=nonneg_Bshunt)
+    lossless=lossless, remove_Bshunt=remove_Bshunt, remove_tap=remove_tap, verb=verb, loss_scale=loss_scale, nonneg_Bshunt=nonneg_Bshunt, nobus_Bshunt=nobus_Bshunt)
 end
 
 computeAdmittances = computeAdmitances
 
 function computeAdmittanceMatrix(lines, buses, baseMVA, busDict;
           lossless::Bool=true, remove_Bshunt::Bool=true, remove_tap::Bool=true,
-          sparse::Bool=true, verb::Bool=false, loss_scale::AbstractFloat=1.0, nonneg_Bshunt::Bool=false)
+          sparse::Bool=true, verb::Bool=false, loss_scale::AbstractFloat=1.0, nonneg_Bshunt::Bool=false, nobus_Bshunt::Bool=false)
 
     YffR, YffI, YttR, YttI, YftR, YftI, YtfR, YtfI, YshR, YshI = computeAdmitances(lines, buses, baseMVA;
                                             lossless=lossless, remove_Bshunt=remove_Bshunt, remove_tap=remove_tap,
-                                            verb=verb, loss_scale=loss_scale, nonneg_Bshunt=nonneg_Bshunt)
+                                            verb=verb, loss_scale=loss_scale, nonneg_Bshunt=nonneg_Bshunt, nobus_Bshunt=nobus_Bshunt)
     nbuses = length(buses)
     nlines = length(lines)
 
@@ -185,6 +185,7 @@ function computeAdmittanceMatrix(opfdata::OPFData, options::Dict=Dict())
     current_rating = haskey(options, :current_rating) ? options[:current_rating] : false
     remove_Bshunt = haskey(options, :remove_Bshunt) ? options[:remove_Bshunt] : false
     nonneg_Bshunt = haskey(options, :nonneg_Bshunt) ? options[:nonneg_Bshunt] : false
+    nobus_Bshunt = haskey(options, :nobus_Bshunt) ? options[:nobus_Bshunt] : false
     remove_tap = haskey(options, :remove_tap) ? options[:remove_tap] : false
     verb = haskey(options, :verb) ? options[:verb] : false
     loss_scale = haskey(options, :loss_scale) ? options[:loss_scale] : 1.0
@@ -199,5 +200,5 @@ function computeAdmittanceMatrix(opfdata::OPFData, options::Dict=Dict())
     nbus = length(buses); nline = length(lines); ngen  = length(generators)
 
     return computeAdmittanceMatrix(lines, buses, baseMVA, busIdx;
-    lossless=lossless, remove_Bshunt=remove_Bshunt, remove_tap=remove_tap, verb=verb, loss_scale=loss_scale, nonneg_Bshunt=nonneg_Bshunt)
+    lossless=lossless, remove_Bshunt=remove_Bshunt, remove_tap=remove_tap, verb=verb, loss_scale=loss_scale, nonneg_Bshunt=nonneg_Bshunt, nobus_Bshunt=nobus_Bshunt)
 end
