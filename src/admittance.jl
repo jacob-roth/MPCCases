@@ -66,18 +66,11 @@ function computeAdmitances(lines, buses, baseMVA;
     for i in 1:nbuses
         YshR[i] = (lossless ? 0.0 : (loss_scale * buses[i].Gs / baseMVA))
         Bs = buses[i].Bs
-        if nonneg_Bshunt
-            if (Bs < 0)
-                println("warning: converting negative B shunt to 0")
-                Bs = 0.0
-            end
-            if i == 5 || i == 37
-                println(Bs)
-            end
-        end
-        YshI[i] = (remove_Bshunt ? 0.0 : (nobus_Bshunt ? 0.0 : Bs / baseMVA)) ## JR: remove bus shunt
-        if i == 5 || i == 37
-            println(YshI[i])
+
+        if i in 1:10
+            YshI[i] = (remove_Bshunt ? 0.0 : (Bs / baseMVA))
+        else
+            YshI[i] = (remove_Bshunt ? 0.0 : (nobus_Bshunt ? 0.0 : Bs / baseMVA)) ## JR: remove bus shunt
         end
         if lossless && !iszero(buses[i].Gs) && verb
             println("warning: lossless assumption changes Gshunt from ", buses[i].Gs, " to 0 for bus ", i)
