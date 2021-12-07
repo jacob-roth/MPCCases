@@ -68,6 +68,7 @@ function computeAdmitances(lines, buses, baseMVA;
         Bs = buses[i].Bs
 
         if i in 1:10
+            println("idx: ", i)
             YshI[i] = (remove_Bshunt ? 0.0 : (Bs / baseMVA))
         else
             YshI[i] = (remove_Bshunt ? 0.0 : (nobus_Bshunt ? 0.0 : Bs / baseMVA)) ## JR: remove bus shunt
