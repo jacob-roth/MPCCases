@@ -67,7 +67,7 @@ function computeAdmitances(lines, buses, baseMVA;
         YshR[i] = (lossless ? 0.0 : (loss_scale * buses[i].Gs / baseMVA))
         Bs = buses[i].Bs
 
-        if i ∉ Set([5, 44, 45, 48, 79, 82, 83])
+        if i ∉ Set([37, 44, 45, 48, 79, 82, 83])
             println("idx: ", i)
             YshI[i] = (remove_Bshunt ? 0.0 : (Bs / baseMVA))
         else
