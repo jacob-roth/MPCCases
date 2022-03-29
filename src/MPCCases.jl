@@ -16,8 +16,12 @@ export CaseData
 include("admittance.jl")
 export computeAdmitances, computeAdmittances, computeAdmittanceMatrix
 
+include("structures.jl")
+export FileStructure, Adjustments, GaussianNoise
+export BusFileIndices, GenFileIndices, GenCostFileIndices, BranchFileIndices
+
 include("adjust.jl")
-export adj_params, adj_multi_params
+export adj_params
 
 include("compose.jl")
 export compose_file
@@ -45,8 +49,8 @@ export get_num_lines, get_line_bus_pairs, get_initial_failed_line_id, get_second
 
 include("util.jl")
 export complete_file_path, complete_base_files
-export get_y_idx, get_write_cols_idx, fill_write_file_path, match_length, cp_remaining_files
-export get_path_dict, get_case_arr, add_gaussian_noise, undo_neg_vals, get_xbar_dict, get_xbar_arr
+export fill_write_file_path, match_length, cp_remaining_files
+export get_path_dict, get_case_arr, get_xbar_dict, get_xbar_arr
 export get_phys
 export get_Bs_psd_adjustments, update_case!
 

@@ -17,7 +17,7 @@ function compose_file(read_file_path::String, base_file_name::String, aux_file_n
     @assert file_ext == Tuple(unique(file_ext))
     base_files = Dict{String, Array}()
     for idx in 1:N
-        base_file = compose_file(read_file_path, base_file_name, aux_file_name[idx], file_ext[idx])
+        base_file = compose_file(read_file_path, base_file_name, aux_file_name[idx], file_ext[idx], T=T)
         base_files[file_ext[idx]] = base_file
     end
     return base_files
