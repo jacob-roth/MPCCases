@@ -21,7 +21,7 @@ export FileStructure, Adjustments, GaussianNoise
 export BusFileIndices, GenFileIndices, GenCostFileIndices, BranchFileIndices
 
 include("adjust.jl")
-export adj_params
+export adj_params, get_y_idx, get_write_cols_idx
 
 include("compose.jl")
 export compose_file
