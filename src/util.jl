@@ -3,11 +3,11 @@ function complete_file_path(file_path::String)
 end
 
 # complete the base_files dictionary if not composed
-function complete_base_files(base_files::Dict{String, Array}, file_path::String, file_name::String; T::Type=Float64)
+function complete_base_files(base_files::Dict{String, Array}, file_path::String, file_name::String)
     file_exts = (".bus", ".branch", ".gen", ".gencost", ".phys")
     for f_ext in file_exts
       if !haskey(base_files, f_ext)
-        base_files[f_ext] = readdlm(complete_file_path(file_path) * file_name * f_ext, T)
+        base_files[f_ext] = readdlm(complete_file_path(file_path) * file_name * f_ext)
       end
     end
     return base_files
@@ -134,5 +134,5 @@ function update_case!(casedata::CaseData; buses=nothing, lines=nothing, generato
       buses = casedata.opf.buses
       casedata.opf.BusGeners = mapGenersToBuses(buses, generators, casedata.opf.BusIdx)
     end
-  end
+end
   
